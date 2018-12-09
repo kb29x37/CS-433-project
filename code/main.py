@@ -19,3 +19,6 @@ print("done training")
 
 utils.show_model_result_enc_dec(model, train_loader)
 
+#utils.save_model(model)
+
+

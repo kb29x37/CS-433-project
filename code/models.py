@@ -18,12 +18,15 @@ class VAE(nn.Module):
         self.fc5 = nn.Linear(int(MNIST_IM_SIZE / 4), int(MNIST_IM_SIZE / 2))
         self.fc6 = nn.Linear(int(MNIST_IM_SIZE / 2), MNIST_IM_SIZE)
 
+        self.rec_loss = nn.MSELoss()
+        #self.rec_loss = nn.BCELoss()
+
     def encode(self, input):
         enc = F.relu(self.fc11(input))
         #enc = F.relu(self.fc2(enc))
         mu = F.relu(self.fc31(enc))
-        logvar = F.relu(self.fc32(enc)) # logvar
-        return mu, logvar
+        sigma = F.relu(self.fc32(enc)) # logvar might be needed if overflow
+        return mu, sigma
 
     def decode(self, latent):
         dec = F.relu(self.fc44(latent))
@@ -32,14 +35,14 @@ class VAE(nn.Module):
         return torch.sigmoid(dec) # get values between 0,1 ? (needed for loss but transform?)
 
     def forward(self, input):
-        mu, logvar = self.encode(input)
-        noisy_latent = torch.randn_like(mu).mul(torch.exp(0.5*logvar)).add(mu) # pick random numbers
+        mu, sigma = self.encode(input)
+        noisy_latent = torch.randn_like(mu).mul(sigma).add(mu) # reparametrisation trick from distribution
         image_res = self.decode(noisy_latent)
-        return image_res, mu, logvar
+        return image_res, mu, sigma
 
     # directly from VAE paper, appendix B
-    def ELBO_loss(self, mu, logvar, x, y):
-        rec_loss = F.binary_cross_entropy(y, x.view(BATCH_SIZE, -1), reduction='sum')
-        D_KL = -0.5 * torch.sum(1 + logvar - mu.pow(2) - torch.exp(logvar))
-        return rec_loss + D_KL
+    def ELBO_loss(self, mu, sigma, x, y):
+        rec_loss = self.rec_loss(y, x.view(BATCH_SIZE, -1)) # why this one work?
+        D_KL = 0.5 * torch.sum(-1 -torch.log(1e-8 + sigma.pow(2)) + mu.pow(2) + sigma.pow(2))
+        return (rec_loss + D_KL)
 

@@ -2,7 +2,7 @@
 import torch
 
 #learning parameters
-EPOCHS = 10
+EPOCHS = 5
 BATCH_SIZE = 64
 LR = 0.001
 
@@ -12,7 +12,7 @@ MNIST_Y = 28
 MNIST_IM_SIZE = MNIST_X * MNIST_Y
 
 # autoencoders parameters
-LATENT = 20
+LATENT = 15
 
 random_seed = 42
 torch.manual_seed(random_seed)

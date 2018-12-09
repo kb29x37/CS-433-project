@@ -55,6 +55,8 @@ def show_dataset_image(loader):
     plt.imshow(example_data[0][0])
     plt.show()
 
+    print(example_data[0][0])
+
 def get_dataset_image(loader):
     examples = enumerate(loader)
     batch_idx, (example_data, example_targets) = next(examples)

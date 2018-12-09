@@ -15,6 +15,7 @@ def train(train_set, model):
             if(x.size()[0] == BATCH_SIZE): # avoid last batch size potentially smaller
                 y, mu, sigma = model(x.reshape(BATCH_SIZE,-1)) # compute predictions
                 loss = model.ELBO_loss(mu, sigma, x, y)
+                print(loss)
                 batch_losses.append(loss.item())
 
                 optimizer.zero_grad()
@@ -25,6 +26,6 @@ def train(train_set, model):
         #plt.plot(batch_losses)
         #plt.show()
 
-    #plt.plot(losses)
-    #plt.show()
+    plt.plot(losses)
+    plt.show()
 
