@@ -17,7 +17,7 @@ trainer.train(train_loader, model)
 
 print("done training")
 
-utils.show_model_result_enc_dec(model, train_loader)
+utils.show_model_result_z(model, train_loader)
 
 #utils.save_model(model)
 
