@@ -2,7 +2,7 @@
 import torch
 
 #learning parameters
-EPOCHS = 3
+EPOCHS = 1
 BATCH_SIZE = 64
 LR = 0.001
 

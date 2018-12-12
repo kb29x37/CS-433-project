@@ -156,6 +156,7 @@ class VAE_conv_mnist(nn.Module): # TODO find suitable hyper parameters
         return mu, logvar
 
     def decode(self, z):
+        print(z.size())
         z_temp = F.relu(self.deconv1(z))
         #print(z_temp.size())
         z_temp = self.deconv1_bn(z_temp)

@@ -19,8 +19,9 @@ trainer.train_convnet(train_loader, model)
 
 print("done training")
 
-utils.show_model_result_z(model, train_loader)
+#utils.show_model_result_z_fully_connected(model, train_loader)
+utils.show_model_result_z_convnet(model, train_loader)
 
-#utils.save_model(model)
+utils.save_model(model)
 
 
