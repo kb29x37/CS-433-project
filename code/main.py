@@ -11,9 +11,11 @@ train_loader, test_loader = load_data.load_MNIST_dataset()
 
 #load_data.show_dataset_image(train_loader)
 
-model = models.VAE()
+model = models.VAE_conv_mnist()
+#model = models.VAE()
 
-trainer.train(train_loader, model)
+trainer.train_convnet(train_loader, model)
+#trainer.train_fully_connected(train_loader, model)
 
 print("done training")
 
