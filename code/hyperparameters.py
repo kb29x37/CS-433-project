@@ -19,6 +19,10 @@ IN_CHANNELS_CIFAR = 3
 IN_CHANNELS_MNIST = 1
 COMPL = 10
 
+# MAE
+eta = 0.01
+gamma = 0.01
+
 random_seed = 42
 torch.manual_seed(random_seed)
 

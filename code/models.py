@@ -45,7 +45,7 @@ class VAE(nn.Module):
         mu, sigma = self.encode(input)
         noisy_latent = torch.randn_like(mu).mul(sigma).add(mu) # reparametrisation trick from distribution
         image_res = self.decode(noisy_latent)
-        return image_res, mu, sigma
+        return image_res, self.ELBO_loss(mu, sigma, input, image_res)
 
     # directly from VAE paper, appendix B
     def ELBO_loss(self, mu, sigma, x, y):
@@ -184,6 +184,123 @@ class VAE_conv_mnist(nn.Module): # TODO find suitable hyper parameters
         y_gen = self.decode(noisy_latent)
         return self.whole_loss(mu=mu_z, logvar=logvar_z, x=input, y_gen=y_gen), y_gen
 
+# basic VAE with encoder / decoder as feedforward nets
+class MAE(nn.Module):
+    def __init__(self):
+        super(MAE, self).__init__()
+        self.fc1 = nn.Linear(MNIST_IM_SIZE, int(MNIST_IM_SIZE / 2))
+        self.fc11 = nn.Linear(MNIST_IM_SIZE, int(MNIST_IM_SIZE / 4))
+        self.fc2 = nn.Linear(int(MNIST_IM_SIZE / 2), int(MNIST_IM_SIZE / 4))
+        self.fc31 = nn.Linear(int(MNIST_IM_SIZE / 4), LATENT)
+        self.fc32 = nn.Linear(int(MNIST_IM_SIZE / 4), LATENT)
+        self.fc4 = nn.Linear(LATENT, int(MNIST_IM_SIZE / 4))
+        self.fc44 = nn.Linear(LATENT, int(MNIST_IM_SIZE / 2))
+        self.fc5 = nn.Linear(int(MNIST_IM_SIZE / 4), int(MNIST_IM_SIZE / 2))
+        self.fc61 = nn.Linear(int(MNIST_IM_SIZE / 2), MNIST_IM_SIZE)
+        self.fc62 = nn.Linear(int(MNIST_IM_SIZE / 2), MNIST_IM_SIZE)
+
+        self.rec_loss = nn.MSELoss()
+        #self.rec_loss = nn.BCELoss() #-> good if binary data ?
+        #self.rec_loss = nn.NLLLoss()
+
+    def encode(self, input):
+        enc = F.relu(self.fc11(input))
+        mu = F.relu(self.fc31(enc))
+        sigma = F.relu(self.fc32(enc)) # logvar might be needed if overflow
+        return mu, sigma
+
+    def decode(self, latent):
+        dec = F.relu(self.fc44(latent))
+        dec = F.relu(self.fc61(dec))
+        return torch.sigmoid(dec)
+
+    def forward(self, input):
+        # separate the input in two distinct
+        x_1 = input[0:int(BATCH_SIZE/2)]
+        x_2 = input[int(BATCH_SIZE/2):BATCH_SIZE]
+
+        # create two sets of z
+        mu_1, sigma_1 = self.encode(x_1)
+        mu_2, sigma_2 = self.encode(x_2)
+
+        noisy_latent_1 = torch.randn_like(mu_1).mul(sigma_1).add(mu_1)
+        noisy_latent_2 = torch.randn_like(mu_2).mul(sigma_2).add(mu_2)
+
+        image_res_1 = self.decode(noisy_latent_1)
+        image_res_2 = self.decode(noisy_latent_2)
+
+        image_res = torch.cat((image_res_1, image_res_2), 0)
+
+        mae_loss = self.MAE_loss(mu_1, sigma_1, mu_2, sigma_2, input, image_res)
+
+        return image_res, mae_loss
+
+    # From MAE paper, applying the two regularisation
+    def MAE_loss(self, mu_1, sigma_1, mu_2, sigma_2, x, y):
+        batch_size_2 = int(BATCH_SIZE/2)
+
+        sigma_1 = torch.add(sigma_1, 1e-8)
+        sigma_2 = torch.add(sigma_2, 1e-8)
+        #print(sigma_1.size())
+        rec_loss = self.rec_loss(y, x.view(BATCH_SIZE, -1)) # why this one work?
+
+        # for the normal loss, we use the mean betwee the mus, sigmas to compute it
+        sigma = torch.mean(torch.add(sigma_1, sigma_2), 1)
+        mu = torch.mean(torch.add(mu_1, mu_2), 1)
+        D_KL_p_q = 0.5 * torch.sum(-1 -torch.log(1e-8 + sigma.pow(2)) + mu.pow(2) + sigma.pow(2))
+
+        cov_1 = torch.autograd.Variable(torch.zeros(batch_size_2, sigma_1.size(1), sigma_1.size(1)))
+        cov_2 = torch.autograd.Variable(torch.zeros(batch_size_2, sigma_2.size(1), sigma_2.size(1)))
+
+        #print(cov_1.size())
+
+        cov_1.as_strided(sigma_1.size(), [cov_1.stride(0), cov_1.size(2) + 1]).copy_(sigma_1)
+        cov_2.as_strided(sigma_2.size(), [cov_2.stride(0), cov_2.size(2) + 1]).copy_(sigma_2)
+
+        #print(cov_1.size())
+        #print(sigma_1[0])
+
+        #print(sigma_1.size())
+
+        inv_cov_1 = torch.inverse(cov_1)
+        inv_cov_2 = torch.inverse(cov_2)
+
+        det_cov_1 = torch.zeros(cov_1.size(0))
+        det_cov_2 = torch.zeros(cov_2.size(0))
+
+        for i in range(0, batch_size_2):
+            det_cov_1[i] = torch.det(cov_1[i])
+            det_cov_2[i] = torch.det(cov_2[i])
+
+        print(inv_cov_2.size())
+        print(cov_1.size())
+
+        mult = torch.matmul(inv_cov_2, cov_1)
+
+        trace = torch.zeros(batch_size_2)
+        for i in range(0, batch_size_2):
+            trace[i] = torch.trace(mult[i])
+
+        a = torch.transpose(torch.add(mu_2, -1, mu_1).resize(batch_size_2, LATENT, 1), dim0=1, dim1=2)
+        #print(a.size())
+        #print(inv_cov_2.size())
+        b = torch.matmul(a, inv_cov_2)
+        c = torch.add(mu_2, -1, mu_1)
+        d = torch.matmul(b.resize(batch_size_2, 1, LATENT), c.resize(batch_size_2, LATENT, 1))
+        e = torch.log(det_cov_2 / det_cov_1) - mu_1.size(1)
+
+        # L_diverse
+        D_KL_q_q = 0.5 * (trace + d + e)
+        D_KL_q_q = D_KL_q_q.resize(batch_size_2, batch_size_2)
+        print(D_KL_q_q)
+        L_diverse = torch.mean(torch.log(1 + torch.exp(-D_KL_q_q)), dim=1)# check this mean thing here
+
+        # L smooth
+        mean_q_q = torch.mean(D_KL_q_q, dim=1)
+        L_smooth = torch.sqrt(torch.sum(D_KL_q_q - mean_q_q).pow(2) / (mu.size(1) - 1))
+
+        return (rec_loss + D_KL + eta * L_diverse + gamma * L_smooth)
+
 ## Resnet implementation from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -202,7 +319,7 @@ class BasicBlock(nn.Module):
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = nn.BatchNorm2d(planes)
         self.downsample = downsample
-        self.stride = stride
+        self.stride = strid
 
     def forward(self, x):
         residual = x
@@ -221,5 +338,3 @@ class BasicBlock(nn.Module):
         out = self.relu(out)
 
         return out
-
-
