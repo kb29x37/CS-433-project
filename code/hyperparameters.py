@@ -2,7 +2,7 @@
 import torch
 
 #learning parameters
-EPOCHS = 1
+EPOCHS = 3
 BATCH_SIZE = 64
 LR = 0.001
 
@@ -12,7 +12,7 @@ MNIST_Y = 28
 MNIST_IM_SIZE = MNIST_X * MNIST_Y
 
 # autoencoders parameters
-LATENT = 15
+LATENT = 10
 
 # convolutional parameters
 IN_CHANNELS_CIFAR = 3

@@ -38,9 +38,9 @@ def show_model_result_z_fully_connected(model, loader):
 def show_model_result_z_convnet(model, loader):
 
     for i in range(0, LATENT):
-        #noise = torch.randn(LATENT)
-        noise = torch.zeros(LATENT)
-        noise[i] = 1
+        noise = torch.randn(LATENT)
+        #noise = torch.zeros(LATENT)
+        #noise[i] = 1
 
         res_image = model.decode(noise.reshape(1, -1, 1, 1))
 

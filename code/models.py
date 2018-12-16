@@ -10,10 +10,10 @@ class VAE(nn.Module):
     def __init__(self):
         super(VAE, self).__init__()
         self.fc1 = nn.Linear(MNIST_IM_SIZE, int(MNIST_IM_SIZE / 2))
-        self.fc11 = nn.Linear(MNIST_IM_SIZE, int(MNIST_IM_SIZE / 4))
+        self.fc11 = nn.Linear(MNIST_IM_SIZE, int(MNIST_IM_SIZE * 4))
         self.fc2 = nn.Linear(int(MNIST_IM_SIZE / 2), int(MNIST_IM_SIZE / 4))
-        self.fc31 = nn.Linear(int(MNIST_IM_SIZE / 4), LATENT)
-        self.fc32 = nn.Linear(int(MNIST_IM_SIZE / 4), LATENT)
+        self.fc31 = nn.Linear(int(MNIST_IM_SIZE * 4), LATENT)
+        self.fc32 = nn.Linear(int(MNIST_IM_SIZE * 4), LATENT)
         self.fc4 = nn.Linear(LATENT, int(MNIST_IM_SIZE / 4))
         self.fc44 = nn.Linear(LATENT, int(MNIST_IM_SIZE / 2))
         self.fc5 = nn.Linear(int(MNIST_IM_SIZE / 4), int(MNIST_IM_SIZE / 2))
@@ -49,7 +49,7 @@ class VAE(nn.Module):
 
     # directly from VAE paper, appendix B
     def ELBO_loss(self, mu, sigma, x, y):
-        rec_loss = self.rec_loss(y, x.view(BATCH_SIZE, -1)) # why this one work?
+        rec_loss_res = self.rec_loss(y, x.view(BATCH_SIZE, -1)) # why this one work?
         #rec_loss = self.rec_loss(y, x.view(BATCH_SIZE, -1).type(torch.LongTensor)) # why this one work?
         #normal_dists = torch.zeros(BATCH_SIZE)
         #for i in range(0, BATCH_SIZE):
@@ -57,8 +57,11 @@ class VAE(nn.Module):
         #    print(y[i])
         #    normal_dists[i] = n_dist.log_prob(y[i])
         #rec_loss = torch.mean(normal_dists)
-        D_KL = 0.5 * torch.sum(-1 -torch.log(1e-8 + sigma.pow(2)) + mu.pow(2) + sigma.pow(2))
-        return (rec_loss + D_KL)
+
+        #should be the sum over dimesion of z
+        D_KL = torch.mean(0.5 * torch.sum(-1 -torch.log(1e-8 + sigma.pow(2)) + mu.pow(2) + sigma.pow(2), dim=1))
+        #print(D_KL.size())
+        return (rec_loss_res + D_KL)
 
 class VAE_mu_var(nn.Module):
     def __init__(self):
@@ -272,8 +275,11 @@ class MAE(nn.Module):
             det_cov_1[i] = torch.det(cov_1[i])
             det_cov_2[i] = torch.det(cov_2[i])
 
-        print(inv_cov_2.size())
-        print(cov_1.size())
+        #print("det_cov_1: " + str(det_cov_1))
+        #print("det_cov_2: " + str(det_cov_2))
+
+        #print(inv_cov_2.size())
+        #print(cov_1.size())
 
         mult = torch.matmul(inv_cov_2, cov_1)
 
@@ -281,25 +287,37 @@ class MAE(nn.Module):
         for i in range(0, batch_size_2):
             trace[i] = torch.trace(mult[i])
 
+        #print(mu_2)
+        #print(mu_1)
         a = torch.transpose(torch.add(mu_2, -1, mu_1).resize(batch_size_2, LATENT, 1), dim0=1, dim1=2)
+        #print("a:" + str(a))
         #print(a.size())
         #print(inv_cov_2.size())
         b = torch.matmul(a, inv_cov_2)
+        #print(b.size())
+        #print("b: " + str(b))
         c = torch.add(mu_2, -1, mu_1)
+        #print("c: " + str(c))
         d = torch.matmul(b.resize(batch_size_2, 1, LATENT), c.resize(batch_size_2, LATENT, 1))
-        e = torch.log(det_cov_2 / det_cov_1) - mu_1.size(1)
+        #print("d: " + str(d))
+        #e = torch.log(det_cov_2 / det_cov_1) - mu_1.size(1) -> dets are all zeros?
+        e = 1 - mu_1.size(1)
+        #print("e: " + str(e))
 
         # L_diverse
         D_KL_q_q = 0.5 * (trace + d + e)
         D_KL_q_q = D_KL_q_q.resize(batch_size_2, batch_size_2)
-        print(D_KL_q_q)
+        #print(D_KL_q_q)
         L_diverse = torch.mean(torch.log(1 + torch.exp(-D_KL_q_q)), dim=1)# check this mean thing here
 
         # L smooth
         mean_q_q = torch.mean(D_KL_q_q, dim=1)
-        L_smooth = torch.sqrt(torch.sum(D_KL_q_q - mean_q_q).pow(2) / (mu.size(1) - 1))
+        #print(mu.size())
+        L_smooth = torch.sqrt(torch.sum(D_KL_q_q - mean_q_q).pow(2) / (mu_1.size(1) - 1))
 
-        return (rec_loss + D_KL + eta * L_diverse + gamma * L_smooth)
+        loss = (rec_loss + D_KL_p_q + eta * L_diverse + gamma * L_smooth)
+        print(torch.mean(loss))
+        return torch.mean(loss)
 
 ## Resnet implementation from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
 
