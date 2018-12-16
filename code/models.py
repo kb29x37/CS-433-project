@@ -248,9 +248,10 @@ class MAE(nn.Module):
         rec_loss = self.rec_loss(y, x.view(BATCH_SIZE, -1)) # why this one work?
 
         # for the normal loss, we use the mean betwee the mus, sigmas to compute it
-        sigma = torch.mean(torch.add(sigma_1, sigma_2), 1)
-        mu = torch.mean(torch.add(mu_1, mu_2), 1)
-        D_KL_p_q = 0.5 * torch.sum(-1 -torch.log(1e-8 + sigma.pow(2)) + mu.pow(2) + sigma.pow(2))
+        sigma = torch.add(sigma_1, sigma_2) * 0.5
+        mu = torch.add(mu_1, mu_2) * 0.5
+        print(mu.size())
+        D_KL_p_q = 0.5 * torch.sum(-1 -torch.log(1e-8 + sigma.pow(2)) + mu.pow(2) + sigma.pow(2), dim=1)
 
         cov_1 = torch.autograd.Variable(torch.zeros(batch_size_2, sigma_1.size(1), sigma_1.size(1)))
         cov_2 = torch.autograd.Variable(torch.zeros(batch_size_2, sigma_2.size(1), sigma_2.size(1)))
@@ -313,10 +314,13 @@ class MAE(nn.Module):
         # L smooth
         mean_q_q = torch.mean(D_KL_q_q, dim=1)
         #print(mu.size())
-        L_smooth = torch.sqrt(torch.sum(D_KL_q_q - mean_q_q).pow(2) / (mu_1.size(1) - 1))
+        L_smooth = torch.sqrt(torch.sum(D_KL_q_q - mean_q_q, dim=1).pow(2) / (mu_1.size(1) - 1))
 
         loss = (rec_loss + D_KL_p_q + eta * L_diverse + gamma * L_smooth)
-        print(torch.mean(loss))
+        print("rec: " + str(rec_loss) + " D_KL_p_q: " + str(D_KL_p_q) + " L_diverse: " +
+              str(L_diverse) + "L_smooth" + str(L_smooth))
+        print("rec: " + str(rec_loss.size()) + " D_KL_p_q: " + str(D_KL_p_q.size()) + " L_diverse: " +
+              str(L_diverse.size()) + "L_smooth" + str(L_smooth.size()))
         return torch.mean(loss)
 
 ## Resnet implementation from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
