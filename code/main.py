@@ -26,7 +26,6 @@ tester.test_fully_connected(test_loader, model)
 utils.show_model_result_z_fully_connected(model, train_loader)
 #utils.show_model_result_z_convnet(model, train_loader)
 
-
 utils.save_model(model)
 
 

@@ -369,8 +369,12 @@ class MAE_cleaned(nn.Module):
         # compute D_KL_q_q
         indices = np.asarray([[i, j] for i in range(0, x.size(0)) for j in range(0, x.size(0)) if i != j])
 
-        j_s = indices[:,0]
-        i_s = indices[:,1]
+        if(x.size(0) == 1):
+            j_s = 0
+            i_s = 0
+        else:
+            j_s = indices[:,0]
+            i_s = indices[:,1]
 
         mu_10 = mu[j_s] - mu[i_s]
         sigma_powed = sigma.pow(2)

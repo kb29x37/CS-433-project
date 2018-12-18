@@ -2,7 +2,7 @@
 import torch
 
 #learning parameters
-EPOCHS = 2
+EPOCHS = 10
 BATCH_SIZE = 64
 LR = 0.001
 
@@ -22,6 +22,8 @@ COMPL = 10
 # MAE
 eta = 1.0
 gamma = 0.01
+
+# N_SAMPLES latent
 
 random_seed = 42
 torch.manual_seed(random_seed)
