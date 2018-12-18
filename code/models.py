@@ -367,20 +367,6 @@ class MAE_cleaned(nn.Module):
         D_KL_p_q = torch.sum(0.5 * torch.sum(mu.pow(2) + sigma.pow(2) - 1 - torch.log(1e-8 + sigma.pow(2)), dim=1))
         elbo_loss = rec_loss + D_KL_p_q
 
-        # compute KL_q_q_pairs
-        covs = torch.autograd.Variable(torch.zeros(BATCH_SIZE, sigma.size(1), sigma.size(1)))
-        covs.as_strided(sigma.size(), [covs.stride(0), covs.size(2) + 1]).copy_(sigma)
-
-        inv_covs = torch.inverse(covs)
-
-        det_covs = torch.zeros(covs.size(0))
-        for i in range(0, BATCH_SIZE):
-            det_covs[i] = torch.det(covs[i])
-
-        D_KLs_logs = torch.zeros((BATCH_SIZE, BATCH_SIZE))
-        D_KLs = torch.zeros(BATCH_SIZE * (BATCH_SIZE - 1), LATENT)
-        k = 0
-
         indices = np.asarray([[i, j] for i in range(0, BATCH_SIZE) for j in range(0, BATCH_SIZE) if i != j])
 
         j_s = indices[:,0]
@@ -394,21 +380,6 @@ class MAE_cleaned(nn.Module):
         D_KLs = 0.5 * (middle + log_term)
 
         D_KLs_logs = torch.sum(torch.log(1 + torch.exp(-D_KLs)))
-
-
-#        for i in range(0, BATCH_SIZE): # N_0
-#            for j in range(0, BATCH_SIZE): # N_1
-#                if(i != j):
-#                    for k in range(0, LATENT):
-#                    trace = 1
-#                    mu_10 = mu[j] - mu[i]
-#                    middle = mu_10 * 1/sigma[j].pow(2) * mu_10
-#                    log_term = torch.log(1e-8 + sigma[j].pow(2) / (1e-8 + sigma[i].pow(2)))
-#                    D_KL = 0.5 * (trace + middle - 1 + log_term)
-#                    D_KLs_logs[i,j] = torch.sum(torch.log(1 + torch.exp(-D_KL)))
-#                    D_KLs[k,:] = D_KL
-#                    k += 1
-                    #print(D_KL.size())
 
         # L_diverse
         L_diverse = 1/BATCH_SIZE * torch.sum(D_KLs_logs)
