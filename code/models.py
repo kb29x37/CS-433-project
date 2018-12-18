@@ -134,7 +134,6 @@ class VAE_conv_mnist(nn.Module): # TODO find suitable hyper parameters
         self.deconv4 = nn.ConvTranspose2d(2 * COMPL, 1 * COMPL, 2, 2, 1)
         self.deconv4_bn = nn.BatchNorm2d(1 * COMPL)
         self.deconv5 = nn.ConvTranspose2d(1 * COMPL, 1, 5, 1, 1)
-        self.dec_out = nn.Linear(int(80), MNIST_IM_SIZE)
 
 
     def encode(self, input):
@@ -393,6 +392,100 @@ class MAE_cleaned(nn.Module):
         #print(L_smooth)
 
         return elbo_loss + eta * L_diverse + gamma * L_smooth
+
+class MAE_conv_mnist(nn.Module):
+    def __init__(self):
+        super(MAE_conv_mnist, self).__init__()
+        self.rec_loss = nn.BCELoss(reduction='sum') # BCE loss suggested from pytorch example for convnets, check why
+
+        # conv(in_channels, out_channels, kernel_size, stride, padding, dilation)
+        self.conv1 = nn.Conv2d(IN_CHANNELS_MNIST, 1 * COMPL, 5, 1, 1)
+        self.conv2 = nn.Conv2d(1 * COMPL, 2 * COMPL, 5, 2, 1)
+        self.conv2_bn = nn.BatchNorm2d(2 * COMPL)
+        self.conv3 = nn.Conv2d(2 * COMPL, 4 * COMPL, 3, 2, 1)
+        self.conv3_bn = nn.BatchNorm2d(4 * COMPL)
+        self.conv4 = nn.Conv2d(4 * COMPL, 8 * COMPL, 3, 2, 1)
+        self.conv4_bn = nn.BatchNorm2d(8 * COMPL)
+        self.conv5_mu = nn.Conv2d(8 * COMPL, LATENT, 3, 1, 0)
+        self.conv5_logvar = nn.Conv2d(8 * COMPL, LATENT, 3, 1, 0)
+        self.enc_out_mu = nn.Linear(int(8 * COMPL), LATENT)
+        self.enc_out_logvar = nn.Linear(int(8 * COMPL), LATENT)
+
+        # TODO eventually add fully connected layers at the end
+
+        self.deconv1 = nn.ConvTranspose2d(LATENT, 8 * COMPL, 4, 1, 0)
+        self.deconv1_bn = nn.BatchNorm2d(8 * COMPL)
+        self.deconv2 = nn.ConvTranspose2d(8 * COMPL, 4 * COMPL, 4, 2, 1)
+        self.deconv2_bn = nn.BatchNorm2d(4 * COMPL)
+        self.deconv3 = nn.ConvTranspose2d(4 * COMPL, 2 * COMPL, 2, 2, 1)
+        self.deconv3_bn = nn.BatchNorm2d(2 * COMPL)
+        self.deconv4 = nn.ConvTranspose2d(2 * COMPL, 1 * COMPL, 2, 2, 1)
+        self.deconv4_bn = nn.BatchNorm2d(1 * COMPL)
+        self.deconv5 = nn.ConvTranspose2d(1 * COMPL, 1, 5, 1, 1)
+
+    def encode(self, input):
+        x_temp = F.relu(self.conv1(input))
+        x_temp = F.relu(self.conv2(x_temp))
+        x_temp = self.conv2_bn(x_temp)
+        x_temp = F.relu(self.conv3(x_temp))
+        x_temp = self.conv3_bn(x_temp)
+        x_temp = F.relu(self.conv4(x_temp))
+        x_temp = self.conv4_bn(x_temp)
+        mu = F.relu(self.conv5_mu(x_temp))
+        logvar = F.relu(self.conv5_logvar(x_temp))
+        return mu, logvar
+
+    def decode(self, z):
+        print(z.size())
+        z_temp = F.relu(self.deconv1(z))
+        z_temp = self.deconv1_bn(z_temp)
+        z_temp = F.relu(self.deconv2(z_temp))
+        z_temp = self.deconv2_bn(z_temp)
+        z_temp = F.relu(self.deconv3(z_temp))
+        z_temp = self.deconv3_bn(z_temp)
+        z_temp = F.relu(self.deconv4(z_temp))
+        z_temp = self.deconv4_bn(z_temp)
+        z_temp = F.relu(self.deconv5(z_temp))
+        return torch.sigmoid(z_temp)
+
+    def MAE_loss(self, mu, sigma, y_gen, x):
+        sigma = sigma + 1e-8 # avoid singular matrices
+
+        # ELBO loss
+        rec_loss = self.rec_loss(y_gen.view(BATCH_SIZE, -1), x.view(BATCH_SIZE, -1))
+        D_KL_p_q = torch.sum(0.5 * torch.sum(mu.pow(2) + sigma.pow(2) - 1 - torch.log(1e-8 + sigma.pow(2)), dim=1))
+        elbo_loss = rec_loss + D_KL_p_q
+
+        # compute D_KL_q_q
+        indices = np.asarray([[i, j] for i in range(0, BATCH_SIZE) for j in range(0, BATCH_SIZE) if i != j])
+
+        j_s = indices[:,0]
+        i_s = indices[:,1]
+
+        mu_10 = mu[j_s] - mu[i_s]
+        sigma_powed = sigma.pow(2)
+
+        middle = mu_10 * 1/sigma_powed[j_s] * mu_10
+        log_term = torch.log(1e-8 + sigma_powed[j_s] / (1e-8 + sigma_powed[i_s]))
+        D_KLs = 0.5 * (middle + log_term)
+
+        D_KLs_logs = torch.sum(torch.log(1 + torch.exp(-D_KLs)))
+
+        # L_diverse
+        L_diverse = 1/BATCH_SIZE * torch.sum(D_KLs_logs)
+        #print(L_diverse)
+
+        # L_smooth
+        L_smooth = 1/BATCH_SIZE * torch.sum(
+            torch.sqrt(torch.sum((D_KLs - torch.mean(D_KLs, dim=0)).pow(2)) / mu.size(1) - 1))
+
+        return elbo_loss + eta * L_diverse + gamma * L_smooth
+    def forward(self, input):
+        mu, sigma = self.encode(input)
+        noisy_latent = torch.randn_like(mu).mul(sigma).add(mu)
+        y_gen = self.decode(noisy_latent)
+        return self.MAE_loss(mu, sigma, y_gen, input), y_gen
+
 
 
 
