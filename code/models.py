@@ -204,8 +204,8 @@ class MAE(nn.Module):
         self.fc61 = nn.Linear(int(MNIST_IM_SIZE / 2), MNIST_IM_SIZE)
         self.fc62 = nn.Linear(int(MNIST_IM_SIZE / 2), MNIST_IM_SIZE)
 
-        self.rec_loss = nn.MSELoss(reduction='sum')
-        #self.rec_loss = nn.BCELoss() #-> good if binary data ?
+        #self.rec_loss = nn.MSELoss(reduction='sum')
+        self.rec_loss = nn.BCELoss(reduction='sum') #-> good if binary data ?
         #self.rec_loss = nn.NLLLoss()
 
     def encode(self, input):
@@ -318,18 +318,18 @@ class MAE(nn.Module):
         D_KL_q_q = 0.5 * (trace + d + e)
         D_KL_q_q = D_KL_q_q.resize(batch_size_2, batch_size_2)
         #print(D_KL_q_q)
-        L_diverse = torch.mean(torch.log(1 + torch.exp(-D_KL_q_q)), dim=1)# check this mean thing here
+        L_diverse = torch.sum(torch.log(1 + torch.exp(-D_KL_q_q)), dim=1)# check this mean thing here
 
         # L smooth
-        mean_q_q = torch.mean(D_KL_q_q, dim=1)
+        mean_q_q = torch.sum(D_KL_q_q, dim=1)
         #print(mu.size())
         L_smooth = torch.sqrt(torch.sum(D_KL_q_q - mean_q_q, dim=1).pow(2) / (mu_1.size(1) - 1))
 
-        loss = (rec_loss + torch.mean(D_KL_p_q) + eta * torch.mean(L_diverse) + gamma * torch.mean(L_smooth))
-        print("rec: " + str(rec_loss) + " D_KL_p_q: " + str(D_KL_p_q) + " L_diverse: " +
-              str(L_diverse) + " L_smooth: " + str(L_smooth))
-        print("rec: " + str(rec_loss.size()) + " D_KL_p_q: " + str(D_KL_p_q.size()) + " L_diverse: " +
-              str(L_diverse.size()) + " L_smooth: " + str(L_smooth.size()))
+        loss = (rec_loss + torch.sum(D_KL_p_q) + eta * torch.sum(L_diverse) + gamma * torch.sum(L_smooth))
+        #print("rec: " + str(rec_loss) + " D_KL_p_q: " + str(D_KL_p_q) + " L_diverse: " +
+        #      str(L_diverse) + " L_smooth: " + str(L_smooth))
+        #print("rec: " + str(rec_loss.size()) + " D_KL_p_q: " + str(D_KL_p_q.size()) + " L_diverse: " +
+        #      str(L_diverse.size()) + " L_smooth: " + str(L_smooth.size()))
         return loss
 
 ## Resnet implementation from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
