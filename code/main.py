@@ -13,7 +13,7 @@ train_loader, test_loader = load_data.load_MNIST_dataset()
 
 #model = models.VAE_conv_mnist()
 #model = models.VAE()
-model = models.MAE()
+model = models.MAE_cleaned()
 
 #trainer.train_convnet(train_loader, model)
 trainer.train_fully_connected(train_loader, model)

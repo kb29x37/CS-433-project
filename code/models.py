@@ -194,10 +194,10 @@ class MAE(nn.Module):
     def __init__(self):
         super(MAE, self).__init__()
         self.fc1 = nn.Linear(MNIST_IM_SIZE, int(MNIST_IM_SIZE / 2))
-        self.fc11 = nn.Linear(MNIST_IM_SIZE, int(MNIST_IM_SIZE / 4))
+        self.fc11 = nn.Linear(MNIST_IM_SIZE, int(MNIST_IM_SIZE * 4))
         self.fc2 = nn.Linear(int(MNIST_IM_SIZE / 2), int(MNIST_IM_SIZE / 4))
-        self.fc31 = nn.Linear(int(MNIST_IM_SIZE / 4), LATENT)
-        self.fc32 = nn.Linear(int(MNIST_IM_SIZE / 4), LATENT)
+        self.fc31 = nn.Linear(int(MNIST_IM_SIZE * 4), LATENT)
+        self.fc32 = nn.Linear(int(MNIST_IM_SIZE * 4), LATENT)
         self.fc4 = nn.Linear(LATENT, int(MNIST_IM_SIZE / 4))
         self.fc44 = nn.Linear(LATENT, int(MNIST_IM_SIZE / 2))
         self.fc5 = nn.Linear(int(MNIST_IM_SIZE / 4), int(MNIST_IM_SIZE / 2))
@@ -240,18 +240,11 @@ class MAE(nn.Module):
 
         return image_res, mae_loss
 
-    # From MAE paper, applying the two regularisation
-    def MAE_loss_pytorch(mu_1, sigma_1, mu_2, sigma_2, x, y):
-        batch_size_2 = int(BATCH_SIZE/2)
-
     def MAE_loss(self, mu_1, sigma_1, mu_2, sigma_2, x, y):
         batch_size_2 = int(BATCH_SIZE/2)
 
-        sigma_1 = torch.add(sigma_1, 1e-8)
-        sigma_2 = torch.add(sigma_2, 1e-8)
-
-        mu_1 = torch.add(mu_1, 1e-8)
-        mu_2 = torch.add(mu_2, 1e-8)
+        sigma_1 = sigma_1 + 1e-8 # avoid singular matrices
+        sigma_2 = sigma_2 + 1e-8
 
         #print(sigma_1.size())
         rec_loss = self.rec_loss(y, x.view(BATCH_SIZE, -1)) # why this one work?
@@ -267,6 +260,7 @@ class MAE(nn.Module):
 
         #print(cov_1.size())
 
+        # from pytorch forums
         cov_1.as_strided(sigma_1.size(), [cov_1.stride(0), cov_1.size(2) + 1]).copy_(sigma_1)
         cov_2.as_strided(sigma_2.size(), [cov_2.stride(0), cov_2.size(2) + 1]).copy_(sigma_2)
 
@@ -310,27 +304,101 @@ class MAE(nn.Module):
         #print("c: " + str(c))
         d = torch.matmul(b.resize(batch_size_2, 1, LATENT), c.resize(batch_size_2, LATENT, 1))
         #print("d: " + str(d))
-        e = torch.log(1e-8 + det_cov_2 / (det_cov_1 + 1e-8)) - mu_1.size(1) #-> dets are all zeros?
-        #e = 1 - mu_1.size(1)
+        e = torch.log(1e-8 + det_cov_2 / (det_cov_1 + 1e-8)) - mu_1.size(1) # avoid div by 0 or log(0)
         #print("e: " + str(e))
 
         # L_diverse
-        D_KL_q_q = 0.5 * (trace + d + e)
+        D_KL_q_q = 0.5 * (trace + d + e) # is this one correct?
+        #print(D_KL_q_q.size())
         D_KL_q_q = D_KL_q_q.resize(batch_size_2, batch_size_2)
         #print(D_KL_q_q)
         L_diverse = torch.sum(torch.log(1 + torch.exp(-D_KL_q_q)), dim=1)# check this mean thing here
+        #print(L_diverse)
 
         # L smooth
-        mean_q_q = torch.sum(D_KL_q_q, dim=1)
+        mean_q_q = torch.mean(D_KL_q_q, dim=1)
         #print(mu.size())
-        L_smooth = torch.sqrt(torch.sum(D_KL_q_q - mean_q_q, dim=1).pow(2) / (mu_1.size(1) - 1))
+        L_smooth = torch.sqrt(torch.sum((D_KL_q_q - mean_q_q).pow(2), dim=1) / (mu_1.size(1) - 1))
+        #print((D_KL_q_q - mean_q_q))
 
-        loss = (rec_loss + torch.sum(D_KL_p_q) + eta * torch.sum(L_diverse) + gamma * torch.sum(L_smooth))
-        print("rec: " + str(rec_loss) + " D_KL_p_q: " + str(D_KL_p_q) + " L_diverse: " +
-              str(L_diverse) + " L_smooth: " + str(L_smooth))
-        print("rec: " + str(rec_loss.size()) + " D_KL_p_q: " + str(D_KL_p_q.size()) + " L_diverse: " +
-              str(L_diverse.size()) + " L_smooth: " + str(L_smooth.size()))
+        loss = (rec_loss + torch.sum(D_KL_p_q) + eta * torch.sum(L_diverse)) + gamma * torch.sum(L_smooth)
+        #print("rec: " + str(rec_loss) + " D_KL_p_q: " + str(D_KL_p_q) + " L_diverse: " +
+        #      str(L_diverse) + " L_smooth: " + str(L_smooth))
+        #print("rec: " + str(rec_loss.size()) + " D_KL_p_q: " + str(D_KL_p_q.size()) + " L_diverse: " +
+        #      str(L_diverse.size()) + " L_smooth: " + str(L_smooth.size()))
         return loss
+
+class MAE_cleaned(nn.Module):
+    def __init__(self):
+        super(MAE_cleaned, self).__init__()
+        self.fc1 = nn.Linear(MNIST_IM_SIZE, int(MNIST_IM_SIZE * 2))
+        self.fc2_mu = nn.Linear(int(MNIST_IM_SIZE * 2), LATENT)
+        self.fc2_sigma = nn.Linear(int(MNIST_IM_SIZE * 2), LATENT)
+        self.fc3 = nn.Linear(LATENT, int(MNIST_IM_SIZE / 2))
+        self.fc4 = nn.Linear(int(MNIST_IM_SIZE / 2), MNIST_IM_SIZE)
+
+        self.rec_loss = nn.BCELoss(reduction = 'sum')
+
+    def encode(self, input):
+        enc = F.relu(self.fc1(input))
+        mu = F.relu(self.fc2_mu(enc))
+        sigma = F.relu(self.fc2_sigma(enc)) # logvar might be needed if overflow
+        return mu, sigma
+
+    def decode(self, latent):
+        dec = F.relu(self.fc3(latent))
+        dec = F.relu(self.fc4(dec))
+        return torch.sigmoid(dec)
+
+    def forward(self, input):
+        mu, sigma = self.encode(input)
+        noisy_latent = torch.randn_like(mu).mul(sigma).add(mu)
+        image_res = self.decode(noisy_latent)
+
+        mae_loss = self.MAE_loss(mu, sigma, image_res, input)
+
+        return image_res, mae_loss
+
+    def MAE_loss(self, mu, sigma, y_gen, x):
+        sigma = sigma + 1e-8 # avoid singular matrices
+
+        # ELBO loss
+        rec_loss = self.rec_loss(y_gen, x.view(BATCH_SIZE, -1))
+        D_KL_p_q = 0.5 * torch.sum(mu.pow(2) + sigma.pow(2) - 1 - torch.log(1e-8 + sigma.pow(2)), dim=1)
+        elbo_loss = rec_loss + D_KL_p_q
+
+        # compute KL_q_q_pairs
+        covs = torch.autograd.Variable(torch.zeros(BATCH_SIZE, sigma.size(1), sigma.size(1)))
+        covs.as_strided(sigma.size(), [covs.stride(0), covs.size(2) + 1]).copy_(sigma)
+
+        inv_covs = torch.inverse(covs)
+
+        det_covs = torch.zeros(covs.size(0))
+        for i in range(0, BATCH_SIZE):
+            det_covs[i] = torch.det(covs[i])
+
+        D_KLs = torch.zeros((BATCH_SIZE, BATCH_SIZE))
+        for i in range(0, BATCH_SIZE): # N_0
+            for j in range(0, BATCH_SIZE): # N_1
+                if(i != j):
+                    for k in range(0, LATENT):
+                        trace = 1
+                        mu_10 = mu[j,k] - mu[i,k]
+                        middle = mu_10 * 1/covs[j,k,k] * mu_10
+                        log_term = torch.log(1e-8 + sigma[j,k].pow(2) / (1e-8 + sigma[i,k].pow(2)))
+                        D_KL = 0.5 * (trace + middle - 1 + log_term)
+                        D_KLs[i,j] += torch.log(1 + torch.exp(-D_KL))
+                        print(D_KL.size())
+
+        # L_diverse
+        L_diverse = 1/BATCH_SIZE * torch.sum(D_KLs)
+
+        # L_smooth
+        L_smooth = torch.sqrt(torch.sum((D_KLs - torch.mean(D_KLs)).pow(2)) / mu.size(1) - 1)
+
+        return elbo_loss + eta * L_diverse + gamma * torch.sum(L_smooth)
+
+
 
 ## Resnet implementation from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
 
