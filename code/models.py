@@ -310,8 +310,8 @@ class MAE(nn.Module):
         #print("c: " + str(c))
         d = torch.matmul(b.resize(batch_size_2, 1, LATENT), c.resize(batch_size_2, LATENT, 1))
         #print("d: " + str(d))
-        #e = torch.log(det_cov_2 / det_cov_1) - mu_1.size(1) #-> dets are all zeros?
-        e = 1 - mu_1.size(1)
+        e = torch.log(1e-8 + det_cov_2 / (det_cov_1 + 1e-8)) - mu_1.size(1) #-> dets are all zeros?
+        #e = 1 - mu_1.size(1)
         #print("e: " + str(e))
 
         # L_diverse
@@ -326,10 +326,10 @@ class MAE(nn.Module):
         L_smooth = torch.sqrt(torch.sum(D_KL_q_q - mean_q_q, dim=1).pow(2) / (mu_1.size(1) - 1))
 
         loss = (rec_loss + torch.sum(D_KL_p_q) + eta * torch.sum(L_diverse) + gamma * torch.sum(L_smooth))
-        #print("rec: " + str(rec_loss) + " D_KL_p_q: " + str(D_KL_p_q) + " L_diverse: " +
-        #      str(L_diverse) + " L_smooth: " + str(L_smooth))
-        #print("rec: " + str(rec_loss.size()) + " D_KL_p_q: " + str(D_KL_p_q.size()) + " L_diverse: " +
-        #      str(L_diverse.size()) + " L_smooth: " + str(L_smooth.size()))
+        print("rec: " + str(rec_loss) + " D_KL_p_q: " + str(D_KL_p_q) + " L_diverse: " +
+              str(L_diverse) + " L_smooth: " + str(L_smooth))
+        print("rec: " + str(rec_loss.size()) + " D_KL_p_q: " + str(D_KL_p_q.size()) + " L_diverse: " +
+              str(L_diverse.size()) + " L_smooth: " + str(L_smooth.size()))
         return loss
 
 ## Resnet implementation from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
