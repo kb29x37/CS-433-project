@@ -380,18 +380,34 @@ class MAE_cleaned(nn.Module):
         D_KLs_logs = torch.zeros((BATCH_SIZE, BATCH_SIZE))
         D_KLs = torch.zeros(BATCH_SIZE * (BATCH_SIZE - 1), LATENT)
         k = 0
-        for i in range(0, BATCH_SIZE): # N_0
-            for j in range(0, BATCH_SIZE): # N_1
-                if(i != j):
+
+        indices = np.asarray([[i, j] for i in range(0, BATCH_SIZE) for j in range(0, BATCH_SIZE) if i != j])
+
+        j_s = indices[:,0]
+        i_s = indices[:,1]
+
+        mu_10 = mu[j_s] - mu[i_s]
+        sigma_powed = sigma.pow(2)
+
+        middle = mu_10 * 1/sigma_powed[j_s] * mu_10
+        log_term = torch.log(1e-8 + sigma_powed[j_s] / (1e-8 + sigma_powed[i_s]))
+        D_KLs = 0.5 * (middle + log_term)
+
+        D_KLs_logs = torch.sum(torch.log(1 + torch.exp(-D_KLs)))
+
+
+#        for i in range(0, BATCH_SIZE): # N_0
+#            for j in range(0, BATCH_SIZE): # N_1
+#                if(i != j):
 #                    for k in range(0, LATENT):
-                    trace = 1
-                    mu_10 = mu[j] - mu[i]
-                    middle = mu_10 * 1/torch.diag(covs[j]) * mu_10
-                    log_term = torch.log(1e-8 + sigma[j].pow(2) / (1e-8 + sigma[i].pow(2)))
-                    D_KL = 0.5 * (trace + middle - 1 + log_term)
-                    D_KLs_logs[i,j] = torch.sum(torch.log(1 + torch.exp(-D_KL)))
-                    D_KLs[k,:] = D_KL
-                    k += 1
+#                    trace = 1
+#                    mu_10 = mu[j] - mu[i]
+#                    middle = mu_10 * 1/sigma[j].pow(2) * mu_10
+#                    log_term = torch.log(1e-8 + sigma[j].pow(2) / (1e-8 + sigma[i].pow(2)))
+#                    D_KL = 0.5 * (trace + middle - 1 + log_term)
+#                    D_KLs_logs[i,j] = torch.sum(torch.log(1 + torch.exp(-D_KL)))
+#                    D_KLs[k,:] = D_KL
+#                    k += 1
                     #print(D_KL.size())
 
         # L_diverse
