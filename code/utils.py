@@ -15,10 +15,12 @@ def show_model_result_enc_dec(model, loader):
 
     res_image, mu, logvar = model(image.reshape(1, -1))
 
-    res_image = res_image.detach().numpy()
-    plt.imshow(res_image[0].reshape(MNIST_X, MNIST_Y))
-    plt.show()
+    fig = plt.figure(figsize=(2,1))
 
+    res_image = res_image.detach().numpy()
+    fig.add_subplot(2, 1, 0)
+    plt.imshow(res_image[0].reshape(MNIST_X, MNIST_Y))
+    fig.add_subploy(2, 1, 1)
     plt.imshow(image)
     plt.show()
 

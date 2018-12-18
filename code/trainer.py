@@ -14,12 +14,12 @@ def train_fully_connected(train_set, model):
         for batch_idx, (x, target) in enumerate(train_set):
             if(x.size()[0] == BATCH_SIZE): # avoid last batch size potentially smaller
                 y, loss = model(x.reshape(BATCH_SIZE,-1)) # compute predictions
-                print(loss)
+                print(loss.item())
                 batch_losses.append(loss.item())
 
+                # compute gradients
                 optimizer.zero_grad()
                 loss.backward()
-                #print(model.fc11.weight.grad)
                 optimizer.step()
 
         losses.append(np.mean(batch_losses))

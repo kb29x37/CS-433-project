@@ -246,7 +246,7 @@ class MAE(nn.Module):
         sigma_2 = sigma_2 + 1e-8
 
         #print(sigma_1.size())
-        rec_loss = self.rec_loss(y, x.view(BATCH_SIZE, -1)) # why this one work?
+        rec_loss = self.rec_loss(y, x)
 
         # for the normal loss, we use the mean betwee the mus, sigmas to compute it
         sigma = torch.add(sigma_1, sigma_2) * 0.5
@@ -362,12 +362,12 @@ class MAE_cleaned(nn.Module):
         sigma = sigma + 1e-8 # avoid singular matrices
 
         # ELBO loss
-        rec_loss = self.rec_loss(y_gen, x.view(BATCH_SIZE, -1))
+        rec_loss = self.rec_loss(y_gen, x)
         D_KL_p_q = torch.sum(0.5 * torch.sum(mu.pow(2) + sigma.pow(2) - 1 - torch.log(1e-8 + sigma.pow(2)), dim=1))
         elbo_loss = rec_loss + D_KL_p_q
 
         # compute D_KL_q_q
-        indices = np.asarray([[i, j] for i in range(0, BATCH_SIZE) for j in range(0, BATCH_SIZE) if i != j])
+        indices = np.asarray([[i, j] for i in range(0, x.size(0)) for j in range(0, x.size(0)) if i != j])
 
         j_s = indices[:,0]
         i_s = indices[:,1]
@@ -457,7 +457,7 @@ class MAE_conv_mnist(nn.Module):
         elbo_loss = rec_loss + D_KL_p_q
 
         # compute D_KL_q_q
-        indices = np.asarray([[i, j] for i in range(0, BATCH_SIZE) for j in range(0, BATCH_SIZE) if i != j])
+        indices = np.asarray([[i, j] for i in range(0, x.size(0)) for j in range(0, x.size(0)) if i != j])
 
         j_s = indices[:,0]
         i_s = indices[:,1]
