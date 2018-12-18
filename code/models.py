@@ -364,7 +364,7 @@ class MAE_cleaned(nn.Module):
 
         # ELBO loss
         rec_loss = self.rec_loss(y_gen, x.view(BATCH_SIZE, -1))
-        D_KL_p_q = 0.5 * torch.sum(mu.pow(2) + sigma.pow(2) - 1 - torch.log(1e-8 + sigma.pow(2)), dim=1)
+        D_KL_p_q = torch.sum(0.5 * torch.sum(mu.pow(2) + sigma.pow(2) - 1 - torch.log(1e-8 + sigma.pow(2)), dim=1))
         elbo_loss = rec_loss + D_KL_p_q
 
         # compute KL_q_q_pairs
@@ -377,26 +377,34 @@ class MAE_cleaned(nn.Module):
         for i in range(0, BATCH_SIZE):
             det_covs[i] = torch.det(covs[i])
 
-        D_KLs = torch.zeros((BATCH_SIZE, BATCH_SIZE))
+        D_KLs_logs = torch.zeros((BATCH_SIZE, BATCH_SIZE))
+        D_KLs = torch.zeros(BATCH_SIZE * (BATCH_SIZE - 1), LATENT)
+        k = 0
         for i in range(0, BATCH_SIZE): # N_0
             for j in range(0, BATCH_SIZE): # N_1
                 if(i != j):
-                    for k in range(0, LATENT):
-                        trace = 1
-                        mu_10 = mu[j,k] - mu[i,k]
-                        middle = mu_10 * 1/covs[j,k,k] * mu_10
-                        log_term = torch.log(1e-8 + sigma[j,k].pow(2) / (1e-8 + sigma[i,k].pow(2)))
-                        D_KL = 0.5 * (trace + middle - 1 + log_term)
-                        D_KLs[i,j] += torch.log(1 + torch.exp(-D_KL))
-                        print(D_KL.size())
+#                    for k in range(0, LATENT):
+                    trace = 1
+                    mu_10 = mu[j] - mu[i]
+                    middle = mu_10 * 1/torch.diag(covs[j]) * mu_10
+                    log_term = torch.log(1e-8 + sigma[j].pow(2) / (1e-8 + sigma[i].pow(2)))
+                    D_KL = 0.5 * (trace + middle - 1 + log_term)
+                    D_KLs_logs[i,j] = torch.sum(torch.log(1 + torch.exp(-D_KL)))
+                    D_KLs[k,:] = D_KL
+                    k += 1
+                    #print(D_KL.size())
 
         # L_diverse
-        L_diverse = 1/BATCH_SIZE * torch.sum(D_KLs)
+        L_diverse = 1/BATCH_SIZE * torch.sum(D_KLs_logs)
+        #print(L_diverse)
 
         # L_smooth
-        L_smooth = torch.sqrt(torch.sum((D_KLs - torch.mean(D_KLs)).pow(2)) / mu.size(1) - 1)
+        #print(torch.mean(D_KLs, dim=0))
+        L_smooth = 1/BATCH_SIZE * torch.sum(
+            torch.sqrt(torch.sum((D_KLs - torch.mean(D_KLs, dim=0)).pow(2)) / mu.size(1) - 1))
+        #print(L_smooth)
 
-        return elbo_loss + eta * L_diverse + gamma * torch.sum(L_smooth)
+        return elbo_loss + eta * L_diverse + gamma * L_smooth
 
 
 
