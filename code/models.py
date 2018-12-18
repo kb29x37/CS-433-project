@@ -367,6 +367,7 @@ class MAE_cleaned(nn.Module):
         D_KL_p_q = torch.sum(0.5 * torch.sum(mu.pow(2) + sigma.pow(2) - 1 - torch.log(1e-8 + sigma.pow(2)), dim=1))
         elbo_loss = rec_loss + D_KL_p_q
 
+        # compute D_KL_q_q
         indices = np.asarray([[i, j] for i in range(0, BATCH_SIZE) for j in range(0, BATCH_SIZE) if i != j])
 
         j_s = indices[:,0]
