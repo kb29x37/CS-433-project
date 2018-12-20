@@ -13,7 +13,7 @@ from hyperparameters import *
 
 train_loader, test_loader = load_data.load_MNIST_dataset()
 
-model = utils.load_model(models.MAE_cleaned())
+model = utils.load_model(models.VAE())
 
 #load_data.show_dataset_image(train_loader)
 
