@@ -14,12 +14,12 @@ def train_fully_connected(train_set, model):
         for batch_idx, (x, target) in enumerate(train_set):
             if(x.size()[0] == BATCH_SIZE): # avoid last batch size potentially smaller
                 y, loss = model(x.reshape(BATCH_SIZE,-1)) # compute predictions
-                #print(loss.size())
+                print(loss.item())
                 batch_losses.append(loss.item())
 
+                # compute gradients
                 optimizer.zero_grad()
                 loss.backward()
-                print(model.fc11.weight.grad)
                 optimizer.step()
 
         losses.append(np.mean(batch_losses))
@@ -28,6 +28,20 @@ def train_fully_connected(train_set, model):
 
     plt.plot(losses)
     plt.show()
+
+def test_mnist_fully_connected(test_set, trained_model):
+    optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+
+    losses = []
+    for e in range(0, EPOCHS):
+        print("Epoch: " + str(e))
+        batch_losses = []
+        for batch_idx, (x, target) in enumerate(train_set):
+            if(x.size()[0] == BATCH_SIZE): # avoid last batch size potentially smaller
+                y, loss = model(x.reshape(BATCH_SIZE,-1)) # compute predictions
+
+        losses.append(np.mean(batch_losses))
+
 
 
 def train_convnet(train_set, model):
