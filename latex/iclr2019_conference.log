@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2016.5.31)  20 DEC 2018 13:15
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2016.5.31)  20 DEC 2018 14:56
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -347,35 +347,33 @@ LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
  [1{/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
 ]
-Missing character: There is no Ã in font ptmr7t!
-Missing character: There is no © in font ptmr7t!
-LaTeX Font Info:    Try loading font information for OT1+pcr on input line 192.
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 213.
 
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
-LaTeX Font Info:    Try loading font information for OMS+pcr on input line 195.
+LaTeX Font Info:    Try loading font information for OMS+pcr on input line 216.
 
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/omspcr.fd
 File: omspcr.fd 
 )
 LaTeX Font Info:    Font shape `OMS/pcr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 195.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 216.
  [2] [3]
 [4]
-LaTeX Font Info:    Try loading font information for OT1+phv on input line 366.
+LaTeX Font Info:    Try loading font information for OT1+phv on input line 387.
 
  (/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/ot1phv.fd
 File: ot1phv.fd 2001/06/04 scalable font definitions for OT1/phv.
 )
 LaTeX Font Info:    Font shape `OT1/phv/bx/n' in size <10> not available
-(Font)              Font shape `OT1/phv/b/n' tried instead on input line 366.
+(Font)              Font shape `OT1/phv/b/n' tried instead on input line 387.
 LaTeX Font Info:    Font shape `OT1/phv/bx/n' in size <7> not available
-(Font)              Font shape `OT1/phv/b/n' tried instead on input line 366.
+(Font)              Font shape `OT1/phv/b/n' tried instead on input line 387.
 LaTeX Font Info:    Font shape `OT1/phv/bx/n' in size <5> not available
-(Font)              Font shape `OT1/phv/b/n' tried instead on input line 366.
+(Font)              Font shape `OT1/phv/b/n' tried instead on input line 387.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
@@ -383,59 +381,69 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [6]
-(./iclr2019_conference.bbl
+(./iclr2019_conference.bbl [7]
 Underfull \hbox (badness 3838) in paragraph at lines 32--35
 []\OT1/ptm/m/n/10 Diederik P. Kingma and Max Welling.  Auto-encoding vari-a-tio
 nal bayes, may 2006.
  []
 
 )
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 528.
- [7]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 528.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 549.
+ [8]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 549.
  (./iclr2019_conference.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 528.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 528.
-Package rerunfilecheck Info: File `iclr2019_conference.out' has not changed.
-(rerunfilecheck)             Checksum: CD7F2E591C42CD809E5AEC379B7742E0;1366.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 528.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 549.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 549.
+
+
+Package rerunfilecheck Warning: File `iclr2019_conference.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `iclr2019_conference.out':
+(rerunfilecheck)             Before: EE8D22607448376CB09F460FB5E3111D;1358
+(rerunfilecheck)             After:  49760492960E05FCB9AFF0EBBF9E799B;1301.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 549.
  )
 (\end occurred inside a group at level 1)
 
-### simple group (level 1) entered at line 379 ({)
+### simple group (level 1) entered at line 400 ({)
 ### bottom level 
 Here is how much of TeX's memory you used:
- 7237 strings out of 493089
- 97491 string characters out of 6134842
+ 7240 strings out of 493089
+ 97517 string characters out of 6134842
  199798 words of memory out of 5000000
  10568 multiletter control sequences out of 15000+600000
  39635 words of font info for 84 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  37i,17n,45p,248b,398s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/base/8r.enc
-}</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb>
-</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><
-/usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></
-usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></us
-r/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/
-local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/
-local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib7.pfb></
-usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></us
-r/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/l
-ocal/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/lo
-cal/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/loca
-l/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/
-local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb></u
-sr/local/texlive/2015/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/local
-/texlive/2015/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/local/texliv
-e/2015/texmf-dist/fonts/type1/urw/helvetic/uhvro8a.pfb></usr/local/texlive/2015
-/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2015/texmf-dis
-t/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/ty
-pe1/urw/times/utmri8a.pfb>
-Output written on iclr2019_conference.pdf (7 pages, 199235 bytes).
+pdfTeX warning (dest): name{subsection.1.4} has been referenced
+ but does not exist, replaced by a fixed one
+
+{/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/tex
+live/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texl
+ive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texli
+ve/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texliv
+e/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texlive/
+2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/20
+15/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/local/texlive/20
+15/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib7.pfb></usr/local/texliv
+e/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/
+2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/201
+5/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2015
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2015/t
+exmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/20
+15/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb></usr/local/texlive
+/2015/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/local/texlive/2015/te
+xmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/local/texlive/2015/texmf-dis
+t/fonts/type1/urw/helvetic/uhvro8a.pfb></usr/local/texlive/2015/texmf-dist/font
+s/type1/urw/times/utmb8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/ur
+w/times/utmr8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/urw/times/ut
+mri8a.pfb>
+Output written on iclr2019_conference.pdf (8 pages, 201327 bytes).
 PDF statistics:
- 253 PDF objects out of 1000 (max. 8388607)
- 222 compressed objects within 3 object streams
- 43 named destinations out of 1000 (max. 500000)
+ 259 PDF objects out of 1000 (max. 8388607)
+ 227 compressed objects within 3 object streams
+ 46 named destinations out of 1000 (max. 500000)
  169 words of extra memory for PDF output out of 10000 (max. 10000000)
 
