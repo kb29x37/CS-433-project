@@ -73,7 +73,7 @@ def test_accuracy(test_loader, model, train_loader):
     closest_distance = np.zeros(LATENT)
 
     for batch_idx, (x, target) in enumerate(train_loader):
-        if(x.size()[0] == batch_size):
+        if(x.size()[0] == BATCH_SIZE):
             mu, sigma = model.encode(x.resize(BATCH_SIZE, MNIST_IM_SIZE))
             z = model.get_z(mu, sigma)
 
@@ -85,10 +85,9 @@ def test_accuracy(test_loader, model, train_loader):
                     closest_distance[closest_means[i]] = differences[i, closest_means[i]]
                     means_labeled[closest_means[i]] = target[i]
 
-
     acc = 0
     for batch_idx, (x, target) in enumerate(train_loader):
-        if(x.size()[0] == batch_size):
+        if(x.size()[0] == BATCH_SIZE):
             mu, sigma = model.encode(x.resize(TEST_BATCH_SIZE, MNIST_IM_SIZE))
             z = model.get_z(mu, sigma)
 
@@ -101,7 +100,4 @@ def test_accuracy(test_loader, model, train_loader):
     acc = acc / len(test_loader.dataset)
 
     return acc
-
-
-
 
