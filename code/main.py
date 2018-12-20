@@ -43,9 +43,8 @@ print("done training")
 
 #utils.save_model(model)
 
-means = k_means.k_means(test_loader)
 
-k_means.test_accuracy(test_loader, model, means)
+k_means.test_accuracy(test_loader, model, train_loader)
 
 
 

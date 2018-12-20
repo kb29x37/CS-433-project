@@ -344,6 +344,9 @@ class MAE_cleaned(nn.Module):
         sigma = F.relu(self.fc2_sigma(enc)) # logvar might be needed if overflow
         return mu, sigma
 
+    def get_z(self, mu, sigma):
+        return torch.randn_like(mu).mul(sigma).add(mu)
+
     def decode(self, latent):
         dec = F.relu(self.fc3(latent))
         dec = F.relu(self.fc4(dec))

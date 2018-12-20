@@ -4,30 +4,40 @@ import torch
 from hyperparameters import *
 
 # compute k means on dataset
-def k_means(loader):
+def k_means(loader, batch_size, model):
     means_label = torch.zeros(K)
 
     (r_x, r_label) = next(iter(loader))
-    r_x = r_x.resize(TEST_BATCH_SIZE, MNIST_IM_SIZE)
-    r_x = r_x[torch.randperm(r_x.size(0))]
+
+    mu, sigma = model.encode(r_x.resize(batch_size, MNIST_IM_SIZE))
+    r_z = model.get_z(mu, sigma)
+
+    r_z = r_z.resize(batch_size, LATENT)
+    r_z = r_z[torch.randperm(r_z.size(0))]
 
     # initialize mean array
-    means = np.zeros((K, MNIST_IM_SIZE))
-    step = int(r_x.size(0)/K)
+    means = np.zeros((K, LATENT))
+    step = int(r_z.size(0)/K)
     for i in range(0, K):
-        means[i,:] = torch.mean(r_x[i*step:(i+1)*step,:], dim=0)
+        means[i,:] = torch.mean(r_z[i*step:(i+1)*step,:].detach(), dim=0)
         print(means.shape)
 
     for e in range(0, K_MEANS_EPOCHS):
         for batch_idx, (x, target) in enumerate(loader):
-            if(x.size()[0] == TEST_BATCH_SIZE):
-                x = x.resize(TEST_BATCH_SIZE, MNIST_IM_SIZE).numpy()
+            if(x.size()[0] == batch_size):
+                x = x.resize(batch_size, MNIST_IM_SIZE)
                 # find closest means
 
-                indices = find_means(x, means)
+                mu, sigma = model.encode(x)
+                z = model.get_z(mu, sigma)
 
-                print("indices " + str(indices))
-                print("target " + str(target.numpy()))
+                z = z.detach().numpy()
+                x = x.numpy()
+
+                indices = find_means(z, means)
+
+                #print("indices " + str(indices))
+                #print("target " + str(target.numpy()))
 
                 for i in range(0, K):
                     selected_indices = np.asarray(np.where(indices == i))
@@ -44,7 +54,7 @@ def compute_differences(x, means):
 
     # compute the distance
     differences = np.square(x[i_s] - means[j_s])
-    differences = differences.reshape(x.shape[0], K, MNIST_IM_SIZE)
+    differences = differences.reshape(x.shape[0], K, LATENT)
     differences = np.sum(differences, axis=2)
 
     return differences
@@ -56,28 +66,41 @@ def find_means(batch, means):
 
     return np.argmin(differences, axis=1)
 
+def test_accuracy(test_loader, model, train_loader):
+    means = k_means(train_loader, BATCH_SIZE, model)
 
-def test_accuracy(loader, model, means):
-    for batch_idx, (x, target) in enumerate(loader):
-        if(x.size(0) == TEST_BATCH_SIZE):
-            x = x.resize(TEST_BATCH_SIZE, MNIST_IM_SIZE)
-            image_res, loss = model(x)
+    means_labeled = np.zeros(K)
+    closest_distance = np.zeros(LATENT)
 
-            image_res = image_res.detach().numpy()
-            x = x.numpy()
+    for batch_idx, (x, target) in enumerate(train_loader):
+        if(x.size()[0] == batch_size):
+            mu, sigma = model.encode(x.resize(BATCH_SIZE, MNIST_IM_SIZE))
+            z = model.get_z(mu, sigma)
 
-            y_means = find_means(image_res, means)
-            x_means = find_means(x, means)
+            differences = compute_differences(z, means)
+            closest_means = np.argmin(differences, axis=1)
 
-            y = np.zeros(y_means.shape)
-            for i in range(0, x_means.shape[0]):
-                y[i] = 1 if y_means[i] == x_means[i] else 0
+            for i in range(0, BATCH_SIZE):
+                if(closest_distance[closest_means[i]] > differences[i, closest_means[i]]):
+                    closest_distance[closest_means[i]] = differences[i, closest_means[i]]
+                    means_labeled[closest_means[i]] = target[i]
 
-            acc = np.sum(y) / y.shape[0]
 
-            print(acc)
+    acc = 0
+    for batch_idx, (x, target) in enumerate(train_loader):
+        if(x.size()[0] == batch_size):
+            mu, sigma = model.encode(x.resize(TEST_BATCH_SIZE, MNIST_IM_SIZE))
+            z = model.get_z(mu, sigma)
 
-            return y
+            y_means = find_means(z, means)
+
+            for i in range(0, y_means.shape[0]):
+                if(means_labeled[y_means[i]] == target[i]):
+                    acc += 1
+
+    acc = acc / len(test_loader.dataset)
+
+    return acc
 
 
 
