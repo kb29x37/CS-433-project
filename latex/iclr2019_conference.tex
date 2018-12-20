@@ -175,16 +175,37 @@ $D_{KL}(p_\phi(z|x)||p_\theta(z))$ in \ref{loss2}. Although this is explained by
 ignoring the latent variables should still result in optimum results in most
 instances of VAE with intractable true posterior and powerful enough decoders.
 
-\subsection {Neural Networks} % TODO change the name of this
-Also read about ConvNet, ResNet, since talked about it in the paper
+%\subsection {Neural Networks} % TODO change the name of this
+%Also read about ConvNet, ResNet, since talked about it in the paper
 
-on a check resnet mais trop grand donc balec
+\subsection {ConvNet}
+Finally, as most experiments in our paper of interest make use of Neural networks
+for the VAE encoder and decoder, we describe here in essence what they are. Note
+that we focus on Convolutional Neural Networks (ConvNet) rather than Residual
+Neural Networks (ResNet), even though the latter is also used in the paper. We
+unfortunately have had technical and timing constraints, and Resnet being
+a fairly big model, we decided to focus on having good results on ConvNet alone.
+
+\paragraph {Regular Neural Nets} A Neural Network is composed of a sequence of
+hidden layers, each consisting of neurons which connect to all neurons of the
+previous layer. The first layer takes a single vector as input, and the last
+layer outputs the result. For example, in a classification problem, it outputs a
+score for each class.
+
+\paragraph {Convolutional Neural Nets}
+An issue with Regular Neural Networks is the fact that each neuron must be
+connect to all neurons of the previous layer, which makes the model
+impractically big for large input data. Convolution Neural Networks (ConvNet)
+take advantage of the fact that, in inputs that represent images, localized
+information in the image can be enough for learning. Each layer organizes its
+neurons in a three dimensions (width, height, depth) and each neuron is not
+constrained to be fully connected to the previous layer. The first layer then
+usually has the same dimensions as the input images, and for the example of a
+classification problem with $c$ classes, the output data will have dimension
+$1\times 1\times c$.
 
 % Citer lossy, c'est bon point de base sur pouquoi c'est pas suffisant, ils
 % expliquent bien
-\subsection {ConvNet}
-on a utilisé convnet du coup, voici ce que c'est. lien vers standford.
-
 \section{Experiments}
 \subsection{Our journey towards MAE implementation}
 
