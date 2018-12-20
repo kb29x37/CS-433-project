@@ -44,7 +44,8 @@ print("done training")
 #utils.save_model(model)
 
 
-k_means.test_accuracy(test_loader, model, train_loader)
+acc = k_means.test_accuracy(test_loader, model, train_loader)
+print("acc on k-means is: " + str(acc))
 
 
 

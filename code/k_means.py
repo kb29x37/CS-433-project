@@ -42,7 +42,7 @@ def k_means(loader, batch_size, model):
                 for i in range(0, K):
                     selected_indices = np.asarray(np.where(indices == i))
                     if(selected_indices.size > 0):
-                        means[i] = np.mean(x[selected_indices])
+                        means[i] = np.mean(x[selected_indices]) * LR_K_MEANS + means[i] * (1 - LR_K_MEANS)
 
     return means
 
@@ -77,6 +77,9 @@ def test_accuracy(test_loader, model, train_loader):
             mu, sigma = model.encode(x.resize(BATCH_SIZE, MNIST_IM_SIZE))
             z = model.get_z(mu, sigma)
 
+            x = x.numpy()
+            z = z.detach().numpy()
+
             differences = compute_differences(z, means)
             closest_means = np.argmin(differences, axis=1)
 
@@ -86,10 +89,13 @@ def test_accuracy(test_loader, model, train_loader):
                     means_labeled[closest_means[i]] = target[i]
 
     acc = 0
-    for batch_idx, (x, target) in enumerate(train_loader):
+    for batch_idx, (x, target) in enumerate(test_loader):
         if(x.size()[0] == BATCH_SIZE):
             mu, sigma = model.encode(x.resize(TEST_BATCH_SIZE, MNIST_IM_SIZE))
             z = model.get_z(mu, sigma)
+
+            z = z.detach().numpy()
+            x = x.numpy()
 
             y_means = find_means(z, means)
 
