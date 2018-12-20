@@ -3,6 +3,7 @@ import trainer
 import tester
 import models
 import utils
+#import k_means
 import matplotlib.pyplot as plt
 import matplotlib.image as image
 
@@ -18,11 +19,11 @@ train_loader, test_loader = load_data.load_MNIST_dataset()
 
 #model = models.VAE_conv_mnist()
 #model = models.MAE_conv_mnist()
-model = models.VAE()
+#model = models.VAE()
 #model = models.MAE_cleaned()
 
 #trainer.train_convnet(train_loader, model)
-trainer.train_fully_connected(train_loader, model, test_loader)
+#trainer.train_fully_connected(train_loader, model, test_loader)
 
 print("done training")
 
@@ -38,9 +39,9 @@ print("done training")
 
 #utils.show_model_result_z_convnet(model, train_loader)
 
-utils.show_model_result_enc_dec(model, test_loader)
+#utils.show_model_result_enc_dec(model, test_loader)
 
 #utils.save_model(model)
 
-
+k_means.kmeans(test_loader)
 

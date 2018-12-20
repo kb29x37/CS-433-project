@@ -26,6 +26,12 @@ gamma = 0.01
 # N_SAMPLES latent
 LATENT_SAMPLES = 10
 
+# K_means parameteres
+K = 10
+K_MEANS_EPOCHS = 20
+threshold = 1e-5
+
+
 random_seed = 42
 torch.manual_seed(random_seed)
 
