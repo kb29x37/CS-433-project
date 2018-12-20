@@ -13,7 +13,7 @@ from hyperparameters import *
 
 train_loader, test_loader = load_data.load_MNIST_dataset()
 
-#model = utils.load_model(models.MAE_cleaned())
+model = utils.load_model(models.MAE_cleaned())
 
 #load_data.show_dataset_image(train_loader)
 
@@ -43,5 +43,9 @@ print("done training")
 
 #utils.save_model(model)
 
-k_means.k_means(test_loader)
+means = k_means.k_means(test_loader)
+
+k_means.test_accuracy(test_loader, model, means)
+
+
 

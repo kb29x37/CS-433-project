@@ -4,6 +4,7 @@ import torch
 #learning parameters
 EPOCHS = 10
 BATCH_SIZE = 64
+TEST_BATCH_SIZE = BATCH_SIZE * 4
 LR = 0.001
 
 #constants

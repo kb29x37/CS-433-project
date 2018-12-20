@@ -8,7 +8,7 @@ def k_means(loader):
     means_label = torch.zeros(K)
 
     (r_x, r_label) = next(iter(loader))
-    r_x = r_x.resize(BATCH_SIZE, MNIST_IM_SIZE)
+    r_x = r_x.resize(TEST_BATCH_SIZE, MNIST_IM_SIZE)
     r_x = r_x[torch.randperm(r_x.size(0))]
 
     # initialize mean array
@@ -20,8 +20,8 @@ def k_means(loader):
 
     for e in range(0, K_MEANS_EPOCHS):
         for batch_idx, (x, target) in enumerate(loader):
-            if(x.size()[0] == BATCH_SIZE):
-                x = x.resize(BATCH_SIZE, MNIST_IM_SIZE).numpy()
+            if(x.size()[0] == TEST_BATCH_SIZE):
+                x = x.resize(TEST_BATCH_SIZE, MNIST_IM_SIZE).numpy()
                 # find closest means
 
                 indices = find_means(x, means)
@@ -59,18 +59,21 @@ def find_means(batch, means):
 
 def test_accuracy(loader, model, means):
     for batch_idx, (x, target) in enumerate(loader):
-        if(x.size(0) == BATCH_SIZE):
-            x = x.resize(BATCH_SIZE, -1)
+        if(x.size(0) == TEST_BATCH_SIZE):
+            x = x.resize(TEST_BATCH_SIZE, MNIST_IM_SIZE)
             image_res, loss = model(x)
+
+            image_res = image_res.detach().numpy()
+            x = x.numpy()
 
             y_means = find_means(image_res, means)
             x_means = find_means(x, means)
 
-            eq_filter = lambda x, y: 1 if (x == y) else 0
-            rd_filter = lambda x, y: x + y
+            y = np.zeros(y_means.shape)
+            for i in range(0, x_means.shape[0]):
+                y[i] = 1 if y_means[i] == x_means[i] else 0
 
-            y = eq_filter(x_means, y_means)
-            acc = reduce(rd_filter, y)
+            acc = np.sum(y) / y.shape[0]
 
             print(acc)
 

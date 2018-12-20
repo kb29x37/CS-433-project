@@ -25,7 +25,7 @@ def load_MNIST_dataset():
                                        torchvision.transforms.Normalize(
                                            (MNIST_MEAN,), (MNIST_STD,))
                                    ])),
-        batch_size=BATCH_SIZE, shuffle=True)
+        batch_size=TEST_BATCH_SIZE, shuffle=True)
 
     return train_loader, test_loader
 
