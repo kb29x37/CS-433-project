@@ -3,7 +3,7 @@ import trainer
 import tester
 import models
 import utils
-#import k_means
+import k_means
 import matplotlib.pyplot as plt
 import matplotlib.image as image
 
@@ -43,5 +43,5 @@ print("done training")
 
 #utils.save_model(model)
 
-k_means.kmeans(test_loader)
+k_means.k_means(test_loader)
 
