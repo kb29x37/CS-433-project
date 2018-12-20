@@ -19,7 +19,6 @@ def train_fully_connected(train_set, model, test_set):
                 print(loss.item())
                 batch_losses.append(loss.item())
 
-
                 # compute gradients
                 optimizer.zero_grad()
                 loss.backward()
@@ -27,7 +26,7 @@ def train_fully_connected(train_set, model, test_set):
 
         # compute batch losses after each epoch, to detect overfitting
         test_loss = tester.test_fully_connected(test_set, model)
-        test_losses.append(test_loss)
+        test_losses.append(np.mean(test_loss))
 
         losses.append(np.mean(batch_losses))
         #plt.plot(batch_losses)
@@ -36,7 +35,6 @@ def train_fully_connected(train_set, model, test_set):
     plt.plot(losses)
     plt.plot(test_losses)
     plt.show()
-
 
 def train_convnet(train_set, model):
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
