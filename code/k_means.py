@@ -83,14 +83,19 @@ def test_accuracy(test_loader, model, train_loader):
             differences = compute_differences(z, means)
             closest_means = np.argmin(differences, axis=1)
 
-            for i in range(0, BATCH_SIZE):
-                if(closest_distance[closest_means[i]] > differences[i, closest_means[i]]):
+            for i in range(0, LATENT):
+                if(closest_distance[closest_means[i]] > differences[i, closest_means[i]]
+                   or closest_distance[i] == 0):
                     closest_distance[closest_means[i]] = differences[i, closest_means[i]]
                     means_labeled[closest_means[i]] = target[i]
 
     acc = 0
+
+    print(means_labeled)
+
     for batch_idx, (x, target) in enumerate(test_loader):
-        if(x.size()[0] == BATCH_SIZE):
+        if(x.size()[0] == TEST_BATCH_SIZE):
+            print(target)
             mu, sigma = model.encode(x.resize(TEST_BATCH_SIZE, MNIST_IM_SIZE))
             z = model.get_z(mu, sigma)
 
@@ -101,6 +106,7 @@ def test_accuracy(test_loader, model, train_loader):
 
             for i in range(0, y_means.shape[0]):
                 if(means_labeled[y_means[i]] == target[i]):
+                    print("inc acc")
                     acc += 1
 
     acc = acc / len(test_loader.dataset)
