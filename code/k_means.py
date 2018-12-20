@@ -41,8 +41,9 @@ def k_means(loader, batch_size, model):
 
                 for i in range(0, K):
                     selected_indices = np.asarray(np.where(indices == i))
+                    print(selected_indices)
                     if(selected_indices.size > 0):
-                        means[i] = np.mean(x[selected_indices]) * LR_K_MEANS + means[i] * (1 - LR_K_MEANS)
+                        means[i] = np.mean(z[selected_indices], dim=1) * LR_K_MEANS + means[i] * (1 - LR_K_MEANS)
 
     return means
 
