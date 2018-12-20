@@ -1,0 +1,557 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{iclr2019_conference,times}
+
+% Optional math commands from https://github.com/goodfeli/dlbook_notation.
+\input{math_commands.tex}
+
+\usepackage{hyperref}
+\usepackage{url}
+
+
+\title{Formatting Instructions for ICLR 2019 / \\ Conference Submissions}
+
+% Authors must not appear in the submitted version. They should be hidden
+% as long as the \iclrfinalcopy macro remains commented out below.
+% Non-anonymous submissions will be rejected without review.
+
+\author{Antiquus S.~Hippocampus, Natalia Cerebro \& Amelie P. Amygdale \thanks{ Use footnote for providing further information
+about author (webpage, alternative address)---\emph{not} for acknowledging
+funding agencies.  Funding acknowledgements go at the end of the paper.} \\
+Department of Computer Science\\
+Cranberry-Lemon University\\
+Pittsburgh, PA 15213, USA \\
+\texttt{\{hippo,brain,jen\}@cs.cranberry-lemon.edu} \\
+\And
+Ji Q. Ren \& Yevgeny LeNet \\
+Department of Computational Neuroscience \\
+University of the Witwatersrand \\
+Joburg, South Africa \\
+\texttt{\{robot,net\}@wits.ac.za} \\
+\AND
+Coauthor \\
+Affiliation \\
+Address \\
+\texttt{email}
+}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+%\iclrfinalcopy % Uncomment for camera-ready version, but NOT for submission.
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+Reproducibility of results obtained in research papers is an important part of
+the research process, as it allows to support the conclusions of the paper, or
+otherwise find potential inconsistencies in the results. The paper we have
+chosen to reproduce is called \textit{MAE~: Mutual Posterior-Divergence
+  Regularization for Variational Autoencoders}, and aims to improve the
+performances of Variational Autoencoders (VAE) by constraining their latent
+variables as to ensure they do contain useful information. VAEs are one of two
+very powerful generative models and can be useful in many different fields,
+which is why we decided to study this paper.
+% The abstract paragraph should be indented 1/2~inch (3~picas) on both left and
+% right-hand margins. Use 10~point type, with a vertical spacing of 11~points.
+% The word \textsc{Abstract} must be centered, in small caps, and in point size 12. Two
+% line spaces precede the abstract. The abstract must be limited to one
+% paragraph.
+\end{abstract}
+
+\section {Introduction} % TODO do we need to change this to some other name ?
+Our research history.
+
+The paper \textit{MAE~: Mutual Posterior-Divergence Regularization for Variational
+Autoencoders} is based on research on Variational Autoencoders (VAEs) and tries
+to mitigate performance issues araising when the latent representation becomes
+uninformative, collapsing the model to an unconditional generative model. We had
+to read multiple papers about previous research on VAEs, as well as different
+Neural Network models used in the studied paper. We will here introduce those
+concepts and talk about the need for a better model than simple VAE as described
+in the first paper introducing the model (\citet{vae}).
+
+\subsection {Variational Autoencoders}
+We learned about VAE, how it works
+
+what's an autoencoder
+
+An autoencoder is a generative model and can be decomposed into
+two parts~: an \emph{encoder} and a \emph{decoder}, which both can be many kinds
+of networks. The encoder generates a so-called \emph{latent representation} of
+the original data received as input, which the decoder will then use to try and
+recover the original information. The goal is then to train the encoder to
+generate the most informative latent variables, and the decoder to reconstruct
+the original data as closely as possible. Such a model can be very useful for
+many reasons~: an efficient latent representation can be useful for analysis and
+understanding of some natural process or for data representation tasks, and when
+used along with the decoder, it can be used to generate realistic data from small
+representations.
+
+For the rest of our discussion, let $x$ be an observable random
+variable which is assumed to be generated from a hidden continuous random
+variable $z$, following a conditional distribution $p_\theta(x|z)$.
+
+Kingma and Welling in their paper wish to design an autoencoder that works well
+even on latent variables with intractable posterior distributions
+$p_\theta(x|z)$, i.e. that cannot be evaluated or differenciated. To this end,
+they introduce what they call a \emph{recognition
+  model} $q_\phi(z|x)$, an approximation to the true posterior $p_\theta(z|x)$.
+They also call $q_\phi(z|x)$ the \emph{encoder} and consequently the conditional
+distribution $p_\theta(x|z)$ the \emph{decoder}.
+
+In fact, they point out that the marginal likelihood $\log p_\theta(x)$ can be
+lower bound by the following~:
+\begin{align}\label{loss1}
+  \log p_\theta(x)\geq \mathcal{L}(\theta, \phi; x)=-D_{KL}\left(
+  q_\phi(z|x)||p_\theta(z) \right)+\mathbb{E}_{q_\phi(z|x)}\left[ \log p_\theta(x|z) \right]
+\end{align}
+which they explain has too high a variance to be practical when estimated using
+a standard Monte Carlo gradient estimator, and where $D_{KL}$ is
+the KL divergence of two distributions. To solve this problem, they introduce a
+new lower bound that takes advantage of a \emph{parameterization trick}, which
+consists in rewriting the distribution of $z$ as a function of a noise
+variable $\varepsilon$~:
+\begin{align}\label{reparam}
+z\sim q_\phi(z|x)=g_\phi(\varepsilon|x)
+\end{align}
+where $\varepsilon$ follows an appropriate distribution $p(\varepsilon)$. This
+makes it possible, after replacing the lower bound in 
+\ref{loss1}, to apply a Monte Carlo
+estimator on the second term, yielding~:
+\begin{align}\label{loss2}
+\tilde{\mathcal{L}}(\theta,\phi;x)=-D_{KL}\left(
+  q_\phi(z|x)||p_\theta(z) \right)+\frac{1}{L}\sum_{l=1}^{L}\log p_\theta(x, g_\phi(\varepsilon_l,x))
+\end{align}
+
+where $L$ is some sample size and $\varepsilon_l$ is a sample from the
+distribution of $\varepsilon$.
+
+%Kingma and Welling in their paper (\citet{vae}) describe a problem that occurs
+%when the marginal likelihood of some data $x$ is intractable, i.e. which cannot
+%be evaluated or differenciated.
+%The observation is the following~: when evaluating the quality of reconstructed
+%data $x$, the lower bound $\mathcal{L}(\theta, \phi; x)$ on the marginal likelihood
+%of this data, for 
+%
+%Kingma and Welling in their paper (\citet{vae}) wish to design an autoencoder
+%that works well on continuous latent variables with intractable posterior
+%distributions, i.e. for which the marginal likelihood $p_\theta(x)$ of some data
+%$x$ with parameters $\theta$ is intractable, i.e. cannot be evaluated or
+%differenciated, and when the dataset is too large for batch optimizations.
+%
+%
+%
+%wish to design an autoencoder
+%that works well on continuous latent variables with intractable posterior
+%distributions. 
+%
+%The paper from Kingma and Welling describe a way to reparameterize 
+
+\subsection {Autoencoding capabilities of VAEs}
+Read about VLAE, which explains well why VAE is not enough. Talk about
+KL-varnishing at some point
+
+As a followup reading, cited in our paper of interest about MAEs, we looked at
+\textit{Variational Lossy Autoencoders} (\citet{vlae}), where we found good
+insight as to why VAEs on their own are not always sufficient for autoencoding.
+
+They note that when the decoder is made too expressive, it is easy for the model
+to set the approximate posterior $q_{\phi}(z|x)$ to equal the prior
+$p_{\theta}(z)$ and hence avoid any cost from the regularizing term
+$D_{KL}(p_\phi(z|x)||p_\theta(z))$ in \ref{loss2}. Although this is explained by
+``optimization challenges'' of VAE in most research
+% (\citet{bowman})
+, they present another observation that, even on a perfectly optimized VAE,
+ignoring the latent variables should still result in optimum results in most
+instances of VAE with intractable true posterior and powerful enough decoders.
+
+%\subsection {Neural Networks} % TODO change the name of this
+%Also read about ConvNet, ResNet, since talked about it in the paper
+
+\subsection {ConvNet}
+Finally, as most experiments in our paper of interest make use of Neural networks
+for the VAE encoder and decoder, we describe here in essence what they are. Note
+that we focus on Convolutional Neural Networks (ConvNet) rather than Residual
+Neural Networks (ResNet), even though the latter is also used in the paper. We
+unfortunately have had technical and timing constraints, and Resnet being
+a fairly big model, we decided to focus on having good results on ConvNet alone.
+
+\paragraph {Regular Neural Nets} A Neural Network is composed of a sequence of
+hidden layers, each consisting of neurons which connect to all neurons of the
+previous layer. The first layer takes a single vector as input, and the last
+layer outputs the result. For example, in a classification problem, it outputs a
+score for each class.
+
+\paragraph {Convolutional Neural Nets}
+An issue with Regular Neural Networks is the fact that each neuron must be
+connect to all neurons of the previous layer, which makes the model
+impractically big for large input data. Convolution Neural Networks (ConvNet)
+take advantage of the fact that, in inputs that represent images, localized
+information in the image can be enough for learning. Each layer organizes its
+neurons in a three dimensions (width, height, depth) and each neuron is not
+constrained to be fully connected to the previous layer. The first layer then
+usually has the same dimensions as the input images, and for the example of a
+classification problem with $c$ classes, the output data will have dimension
+$1\times 1\times c$.
+
+% Citer lossy, c'est bon point de base sur pouquoi c'est pas suffisant, ils
+% expliquent bien
+<<<<<<< HEAD
+
+\section{Submission of conference papers to ICLR 2019}
+
+ICLR requires electronic submissions, processed by
+\url{https://openreview.net/}. See ICLR's website for more instructions.
+
+If your paper is ultimately accepted, the statement {\tt
+  {\textbackslash}iclrfinalcopy} should be inserted to adjust the
+format to the camera ready requirements.
+
+The format for the submissions is a variant of the NIPS format.
+Please read carefully the instructions below, and follow them
+faithfully.
+
+\subsection{Style}
+
+Papers to be submitted to ICLR 2019 must be prepared according to the
+instructions presented here.
+
+%% Please note that we have introduced automatic line number generation
+%% into the style file for \LaTeXe. This is to help reviewers
+%% refer to specific lines of the paper when they make their comments. Please do
+%% NOT refer to these line numbers in your paper as they will be removed from the
+%% style file for the final version of accepted papers.
+
+Authors are required to use the ICLR \LaTeX{} style files obtainable at the
+ICLR website. Please make sure you use the current files and
+not previous versions. Tweaking the style files may be grounds for rejection.
+
+\subsection{Retrieval of style files}
+
+The style files for ICLR and other conference information are available on the World Wide Web at
+\begin{center}
+   \url{http://www.iclr.cc/}
+\end{center}
+The file \verb+iclr2019_conference.pdf+ contains these
+instructions and illustrates the
+various formatting requirements your ICLR paper must satisfy.
+Submissions must be made using \LaTeX{} and the style files
+\verb+iclr2019_conference.sty+ and \verb+iclr2019_conference.bst+ (to be used with \LaTeX{}2e). The file
+\verb+iclr2019_conference.tex+ may be used as a ``shell'' for writing your paper. All you
+have to do is replace the author, title, abstract, and text of the paper with
+your own.
+
+The formatting instructions contained in these style files are summarized in
+sections \ref{gen_inst}, \ref{headings}, and \ref{others} below.
+
+\section{General formatting instructions}
+\label{gen_inst}
+
+The text must be confined within a rectangle 5.5~inches (33~picas) wide and
+9~inches (54~picas) long. The left margin is 1.5~inch (9~picas).
+Use 10~point type with a vertical spacing of 11~points. Times New Roman is the
+preferred typeface throughout. Paragraphs are separated by 1/2~line space,
+with no indentation.
+
+Paper title is 17~point, in small caps and left-aligned.
+All pages should start at 1~inch (6~picas) from the top of the page.
+
+Authors' names are
+set in boldface, and each name is placed above its corresponding
+address. The lead author's name is to be listed first, and
+the co-authors' names are set to follow. Authors sharing the
+same address can be on the same line.
+
+Please pay special attention to the instructions in section \ref{others}
+regarding figures, tables, acknowledgments, and references.
+
+\section{Headings: first level}
+\label{headings}
+
+First level headings are in small caps,
+flush left and in point size 12. One line space before the first level
+heading and 1/2~line space after the first level heading.
+
+\subsection{Headings: second level}
+
+Second level headings are in small caps,
+flush left and in point size 10. One line space before the second level
+heading and 1/2~line space after the second level heading.
+
+\subsubsection{Headings: third level}
+
+Third level headings are in small caps,
+flush left and in point size 10. One line space before the third level
+heading and 1/2~line space after the third level heading.
+
+\section{Citations, figures, tables, references}
+\label{others}
+
+These instructions apply to everyone, regardless of the formatter being used.
+
+\subsection{Citations within the text}
+
+Citations within the text should be based on the \texttt{natbib} package
+and include the authors' last names and year (with the ``et~al.'' construct
+for more than two authors). When the authors or the publication are
+included in the sentence, the citation should not be in parenthesis (as
+in ``See \citet{Hinton06} for more information.''). Otherwise, the citation
+should be in parenthesis (as in ``Deep learning shows promise to make progress towards AI~\citep{Bengio+chapter2007}.'').
+
+The corresponding references are to be listed in alphabetical order of
+authors, in the \textsc{References} section. As to the format of the
+references themselves, any style is acceptable as long as it is used
+consistently.
+
+\subsection{Footnotes}
+
+Indicate footnotes with a number\footnote{Sample of the first footnote} in the
+text. Place the footnotes at the bottom of the page on which they appear.
+Precede the footnote with a horizontal rule of 2~inches
+(12~picas).\footnote{Sample of the second footnote}
+
+\subsection{Figures}
+
+All artwork must be neat, clean, and legible. Lines should be dark
+enough for purposes of reproduction; art work should not be
+hand-drawn. The figure number and caption always appear after the
+figure. Place one line space before the figure caption, and one line
+space after the figure. The figure caption is lower case (except for
+first word and proper nouns); figures are numbered consecutively.
+
+Make sure the figure caption does not get separated from the figure.
+Leave sufficient space to avoid splitting the figure and figure caption.
+
+You may use color figures.
+However, it is best for the
+figure captions and the paper body to make sense if the paper is printed
+either in black/white or in color.
+\begin{figure}[h]
+\begin{center}
+%\framebox[4.0in]{$\;$}
+\fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
+\end{center}
+\caption{Sample figure caption.}
+\end{figure}
+
+\subsection{Tables}
+
+All tables must be centered, neat, clean and legible. Do not use hand-drawn
+tables. The table number and title always appear before the table. See
+Table~\ref{sample-table}.
+
+Place one line space before the table title, one line space after the table
+title, and one line space after the table. The table title must be lower case
+(except for first word and proper nouns); tables are numbered consecutively.
+
+\begin{table}[t]
+\caption{Sample table title}
+\label{sample-table}
+\begin{center}
+\begin{tabular}{ll}
+\multicolumn{1}{c}{\bf PART}  &\multicolumn{1}{c}{\bf DESCRIPTION}
+\\ \hline \\
+Dendrite         &Input terminal \\
+Axon             &Output terminal \\
+Soma             &Cell body (contains cell nucleus) \\
+\end{tabular}
+\end{center}
+\end{table}
+
+\section{Default Notation}
+
+In an attempt to encourage standardized notation, we have included the
+notation file from the textbook, \textit{Deep Learning}
+\cite{goodfellow2016deep} available at
+\url{https://github.com/goodfeli/dlbook_notation/}.  Use of this style
+is not required and can be disabled by commenting out
+\texttt{math\_commands.tex}.
+
+
+\centerline{\bf Numbers and Arrays}
+\bgroup
+\def\arraystretch{1.5}
+\begin{tabular}{p{1in}p{3.25in}}
+$\displaystyle a$ & A scalar (integer or real)\\
+$\displaystyle \va$ & A vector\\
+$\displaystyle \mA$ & A matrix\\
+$\displaystyle \tA$ & A tensor\\
+$\displaystyle \mI_n$ & Identity matrix with $n$ rows and $n$ columns\\
+$\displaystyle \mI$ & Identity matrix with dimensionality implied by context\\
+$\displaystyle \ve^{(i)}$ & Standard basis vector $[0,\dots,0,1,0,\dots,0]$ with a 1 at position $i$\\
+$\displaystyle \text{diag}(\va)$ & A square, diagonal matrix with diagonal entries given by $\va$\\
+$\displaystyle \ra$ & A scalar random variable\\
+$\displaystyle \rva$ & A vector-valued random variable\\
+$\displaystyle \rmA$ & A matrix-valued random variable\\
+\end{tabular}
+\egroup
+\vspace{0.25cm}
+
+\centerline{\bf Sets and Graphs}
+\bgroup
+\def\arraystretch{1.5}
+
+\begin{tabular}{p{1.25in}p{3.25in}}
+$\displaystyle \sA$ & A set\\
+$\displaystyle \R$ & The set of real numbers \\
+$\displaystyle \{0, 1\}$ & The set containing 0 and 1 \\
+$\displaystyle \{0, 1, \dots, n \}$ & The set of all integers between $0$ and $n$\\
+$\displaystyle [a, b]$ & The real interval including $a$ and $b$\\
+$\displaystyle (a, b]$ & The real interval excluding $a$ but including $b$\\
+$\displaystyle \sA \backslash \sB$ & Set subtraction, i.e., the set containing the elements of $\sA$ that are not in $\sB$\\
+$\displaystyle \gG$ & A graph\\
+$\displaystyle \parents_\gG(\ervx_i)$ & The parents of $\ervx_i$ in $\gG$
+\end{tabular}
+\vspace{0.25cm}
+
+
+\centerline{\bf Indexing}
+\bgroup
+\def\arraystretch{1.5}
+
+\begin{tabular}{p{1.25in}p{3.25in}}
+$\displaystyle \eva_i$ & Element $i$ of vector $\va$, with indexing starting at 1 \\
+$\displaystyle \eva_{-i}$ & All elements of vector $\va$ except for element $i$ \\
+$\displaystyle \emA_{i,j}$ & Element $i, j$ of matrix $\mA$ \\
+$\displaystyle \mA_{i, :}$ & Row $i$ of matrix $\mA$ \\
+$\displaystyle \mA_{:, i}$ & Column $i$ of matrix $\mA$ \\
+$\displaystyle \etA_{i, j, k}$ & Element $(i, j, k)$ of a 3-D tensor $\tA$\\
+$\displaystyle \tA_{:, :, i}$ & 2-D slice of a 3-D tensor\\
+$\displaystyle \erva_i$ & Element $i$ of the random vector $\rva$ \\
+\end{tabular}
+\egroup
+\vspace{0.25cm}
+
+
+\centerline{\bf Calculus}
+\bgroup
+\def\arraystretch{1.5}
+\begin{tabular}{p{1.25in}p{3.25in}}
+% NOTE: the [2ex] on the next line adds extra height to that row of the table.
+% Without that command, the fraction on the first line is too tall and collides
+% with the fraction on the second line.
+$\displaystyle\frac{d y} {d x}$ & Derivative of $y$ with respect to $x$\\ [2ex]
+$\displaystyle \frac{\partial y} {\partial x} $ & Partial derivative of $y$ with respect to $x$ \\
+$\displaystyle \nabla_\vx y $ & Gradient of $y$ with respect to $\vx$ \\
+$\displaystyle \nabla_\mX y $ & Matrix derivatives of $y$ with respect to $\mX$ \\
+$\displaystyle \nabla_\tX y $ & Tensor containing derivatives of $y$ with respect to $\tX$ \\
+$\displaystyle \frac{\partial f}{\partial \vx} $ & Jacobian matrix $\mJ \in \R^{m\times n}$ of $f: \R^n \rightarrow \R^m$\\
+$\displaystyle \nabla_\vx^2 f(\vx)\text{ or }\mH( f)(\vx)$ & The Hessian matrix of $f$ at input point $\vx$\\
+$\displaystyle \int f(\vx) d\vx $ & Definite integral over the entire domain of $\vx$ \\
+$\displaystyle \int_\sS f(\vx) d\vx$ & Definite integral with respect to $\vx$ over the set $\sS$ \\
+\end{tabular}
+\egroup
+\vspace{0.25cm}
+
+\centerline{\bf Probability and Information Theory}
+\bgroup
+\def\arraystretch{1.5}
+\begin{tabular}{p{1.25in}p{3.25in}}
+$\displaystyle P(\ra)$ & A probability distribution over a discrete variable\\
+$\displaystyle p(\ra)$ & A probability distribution over a continuous variable, or over
+a variable whose type has not been specified\\
+$\displaystyle \ra \sim P$ & Random variable $\ra$ has distribution $P$\\% so thing on left of \sim should always be a random variable, with name beginning with \r
+$\displaystyle  \E_{\rx\sim P} [ f(x) ]\text{ or } \E f(x)$ & Expectation of $f(x)$ with respect to $P(\rx)$ \\
+$\displaystyle \Var(f(x)) $ &  Variance of $f(x)$ under $P(\rx)$ \\
+$\displaystyle \Cov(f(x),g(x)) $ & Covariance of $f(x)$ and $g(x)$ under $P(\rx)$\\
+$\displaystyle H(\rx) $ & Shannon entropy of the random variable $\rx$\\
+$\displaystyle \KL ( P \Vert Q ) $ & Kullback-Leibler divergence of P and Q \\
+$\displaystyle \mathcal{N} ( \vx ; \vmu , \mSigma)$ & Gaussian distribution %
+over $\vx$ with mean $\vmu$ and covariance $\mSigma$ \\
+\end{tabular}
+\egroup
+\vspace{0.25cm}
+
+\centerline{\bf Functions}
+\bgroup
+\def\arraystretch{1.5}
+\begin{tabular}{p{1.25in}p{3.25in}}
+$\displaystyle f: \sA \rightarrow \sB$ & The function $f$ with domain $\sA$ and range $\sB$\\
+$\displaystyle f \circ g $ & Composition of the functions $f$ and $g$ \\
+  $\displaystyle f(\vx ; \vtheta) $ & A function of $\vx$ parametrized by $\vtheta$.
+  (Sometimes we write $f(\vx)$ and omit the argument $\vtheta$ to lighten notation) \\
+$\displaystyle \log x$ & Natural logarithm of $x$ \\
+$\displaystyle \sigma(x)$ & Logistic sigmoid, $\displaystyle \frac{1} {1 + \exp(-x)}$ \\
+$\displaystyle \zeta(x)$ & Softplus, $\log(1 + \exp(x))$ \\
+$\displaystyle || \vx ||_p $ & $\normlp$ norm of $\vx$ \\
+$\displaystyle || \vx || $ & $\normltwo$ norm of $\vx$ \\
+$\displaystyle x^+$ & Positive part of $x$, i.e., $\max(0,x)$\\
+$\displaystyle \1_\mathrm{condition}$ & is 1 if the condition is true, 0 otherwise\\
+\end{tabular}
+\egroup
+\vspace{0.25cm}
+
+
+
+\section{Final instructions}
+Do not change any aspects of the formatting parameters in the style files.
+In particular, do not modify the width or length of the rectangle the text
+should fit into, and do not change font sizes (except perhaps in the
+\textsc{References} section; see below). Please note that pages should be
+numbered.
+
+\section{Preparing PostScript or PDF files}
+
+Please prepare PostScript or PDF files with paper size ``US Letter'', and
+not, for example, ``A4''. The -t
+letter option on dvips will produce US Letter files.
+
+Consider directly generating PDF files using \verb+pdflatex+
+(especially if you are a MiKTeX user).
+PDF figures must be substituted for EPS figures, however.
+
+Otherwise, please generate your PostScript and PDF files with the following commands:
+\begin{verbatim}
+dvips mypaper.dvi -t letter -Ppdf -G0 -o mypaper.ps
+ps2pdf mypaper.ps mypaper.pdf
+\end{verbatim}
+
+\subsection{Margins in LaTeX}
+
+Most of the margin problems come from figures positioned by hand using
+\verb+\special+ or other commands. We suggest using the command
+\verb+\includegraphics+
+from the graphicx package. Always specify the figure width as a multiple of
+the line width as in the example below using .eps graphics
+\begin{verbatim}
+   \usepackage[dvips]{graphicx} ...
+   \includegraphics[width=0.8\linewidth]{myfile.eps}
+\end{verbatim}
+or % Apr 2009 addition
+\begin{verbatim}
+   \usepackage[pdftex]{graphicx} ...
+   \includegraphics[width=0.8\linewidth]{myfile.pdf}
+\end{verbatim}
+for .pdf graphics.
+See section~4.4 in the graphics bundle documentation (\url{http://www.ctan.org/tex-archive/macros/latex/required/graphics/grfguide.ps})
+
+A number of width problems arise when LaTeX cannot properly hyphenate a
+line. Please give LaTeX hyphenation hints using the \verb+\-+ command.
+=======
+\subsection {ConvNet}
+on a utilisé convnet du coup, voici ce que c'est. lien vers standford.
+
+\section{Experiments}
+\subsection{Our journey towards MAE implementation}
+>>>>>>> 47f0a323596f27c2441daec0a7630aa853755977
+
+
+\subsubsection*{Acknowledgments}
+
+Use unnumbered third level headings for the acknowledgments. All
+acknowledgments, including those to funding agencies, go at the end of the paper.
+
+\bibliography{iclr2019_conference}
+\bibliographystyle{iclr2019_conference}
+
+\end{document}
