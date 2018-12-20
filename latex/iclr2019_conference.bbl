@@ -1,9 +1,22 @@
-\begin{thebibliography}{2}
+\begin{thebibliography}{9}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Altosaar(2017)]{jaan}
+Jaan Altosaar.
+\newblock What is a variational autoencoder ?
+\newblock \url{https://jaan.io/what-is-variational-autoencoder-vae-tutorial/},
+  2017.
+
+\bibitem[Bowman et~al.(2015)Bowman, Luke, Oriol, Dai, Jozefowicz, and
+  Bengio]{bowman}
+Samuel~R Bowman, Vilnis Luke, Vinyals Oriol, Andrew~M Dai, Rafal Jozefowicz,
+  and Samy Bengio.
+\newblock Generating sentences from a continues space, 2015.
+\newblock arXiv:1511.06349.
 
 \bibitem[Chen et~al.(2017)Chen, Kingma, Salimans, Duan, Dhariwal, Schulman,
   Sutskever, and Abbeel]{vlae}
@@ -12,9 +25,36 @@ Xi~Chen, Diederik Kingma, Time Salimans, Yan Duan, Prafulla Dhariwal, John
 \newblock Variational lossy autoencoder, mar 2017.
 \newblock arXiv:1611.02731v2.
 
+\bibitem[Doersch(2016)]{tut}
+Carl Doersch.
+\newblock Tutorial on variational autoencoders.
+\newblock \url{https://arxiv.org/pdf/1606.05908.pdf}, 2016.
+\newblock arXiv:1606.05908v2.
+
+\bibitem[Insights(2018)]{arxiv_vae}
+ArXiv Insights.
+\newblock Variational autoencoders.
+\newblock \url{https://www.youtube.com/watch?v=9zKuYvjFFS8&t=1s}, feb 2018.
+
 \bibitem[Kingma \& Welling(2006)Kingma and Welling]{vae}
 Diederik~P. Kingma and Max Welling.
 \newblock Auto-encoding variational bayes, may 2006.
 \newblock arXiv:1312.6114v10.
+
+\bibitem[Pytorch(2018{\natexlab{a}})]{pytorch_doc}
+Pytorch.
+\newblock Pytorch documentation.
+\newblock \url{https://pytorch.org/docs/stable/index.html}, 2018{\natexlab{a}}.
+
+\bibitem[Pytorch(2018{\natexlab{b}})]{vae_imp1}
+Pytorch.
+\newblock Basic vae example.
+\newblock \url{https://github.com/pytorch/examples/tree/master/vae},
+  2018{\natexlab{b}}.
+
+\bibitem[University(2018)]{convnets_stan}
+Stanford University.
+\newblock Convolutional neural networks (cnns / convnets).
+\newblock \url{http://cs231n.github.io/convolutional-networks/}, 2018.
 
 \end{thebibliography}

@@ -170,7 +170,7 @@ for the VAE encoder and decoder, we describe here in essence what they are. Note
 that we focus on Convolutional Neural Networks (ConvNet) rather than Residual
 Neural Networks (ResNet), even though the latter is also used in the paper. We
 unfortunately have had technical and timing constraints, and Resnet being
-a fairly big model, we decided to focus on having good results on ConvNet alone.
+a fairly big model, we decided to focus more on ConvNet than pretending to do both.
 
 \paragraph {Regular Neural Nets} A Neural Network is composed of a sequence of
 hidden layers, each consisting of neurons which connect to all neurons of the
@@ -200,7 +200,7 @@ encode and the decoder as one layer, and our scheme is the following:
 
 \begin{figure}
   \centering
-      \includegraphics[width=1.0\textwidth]{model}
+  \includegraphics[width=1.0\textwidth]{model}
   \caption{Our implementation, lower amount of neurons displayed}
 \end{figure}
 
@@ -366,10 +366,6 @@ time to investigate further on this, but it would be some nice future work on
 this project.
 
 
-\end{document}
-
-
-
 \section {Conclusion}
 Ouverture, future work.
 \begin{itemize}
@@ -382,8 +378,10 @@ Ouverture, future work.
 \end{itemize}
 
 
+\nocite{*}
 \bibliography{iclr2019_conference}
 \bibliographystyle{iclr2019_conference}
+
 
 \end{document}
 
