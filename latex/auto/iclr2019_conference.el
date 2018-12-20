@@ -1,8 +1,6 @@
 (TeX-add-style-hook
  "iclr2019_conference"
  (lambda ()
-   (TeX-add-to-alist 'LaTeX-provided-package-options
-                     '(("graphicx" "dvips" "pdftex")))
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "path")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "url")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "nolinkurl")
@@ -17,20 +15,14 @@
     "art10"
     "times"
     "hyperref"
-    "url"
-    "graphicx")
+    "url")
    (TeX-add-symbols
     "fix"
-    "new"
-    "arraystretch")
+    "new")
    (LaTeX-add-labels
     "loss1"
     "reparam"
-    "loss2"
-    "gen_inst"
-    "headings"
-    "others"
-    "sample-table")
+    "loss2")
    (LaTeX-add-bibliographies))
  :latex)
 
