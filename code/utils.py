@@ -51,19 +51,24 @@ def show_model_result_z_convnet(model, loader):
         plt.imshow(res_image[0].reshape(MNIST_X, MNIST_Y))
         plt.show()
 
-def linear_exploration_latent(model, loader):
-    direction = [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0]
-    eps = 0.01
+def linear_exploration_latent(loader, model):
+    one = torch.tensor([0.,1.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
+    direction = torch.tensor([0.,-1.,0.,1.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
+    #direction = torch.randn(LATENT)
+    eps = 0.1
 
-    initial_noise = torch.randn(LATENT)
+    #initial_noise = torch.randn(LATENT)
+    initial_noise = one
 
-    fig = plt.figure(figsize=(LATENT_SAMPLES,1))
+    fig = plt.figure(figsize=(1,LATENT_SAMPLES))
 
     for i in range(0, LATENT_SAMPLES):
-        res_image = model.decode(noise.reshape(1, -1))
+        print(initial_noise)
+        print(direction)
+        res_image = model.decode(initial_noise.reshape(1, -1))
 
         res_image = res_image.detach().numpy()
-        fig.add_subplot(i+1, 1, 1)
+        fig.add_subplot(1, LATENT_SAMPLES, i+1)
         plt.imshow(res_image[0].reshape(MNIST_X, MNIST_Y))
 
         initial_noise += direction * eps
@@ -74,8 +79,7 @@ def linear_exploration_latent(model, loader):
 def save_model(model):
     torch.save(model.state_dict(), MODEL_PATH)
 
-def load_model():
-    model = VAE()
+def load_model(model):
     model.load_state_dict(torch.load(MODEL_PATH))
     model.eval()
     return model

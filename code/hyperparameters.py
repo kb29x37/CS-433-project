@@ -24,6 +24,7 @@ eta = 1.0
 gamma = 0.01
 
 # N_SAMPLES latent
+LATENT_SAMPLES = 10
 
 random_seed = 42
 torch.manual_seed(random_seed)
